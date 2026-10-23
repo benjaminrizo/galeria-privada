@@ -9,7 +9,7 @@ Todo el trabajo se encuentra en la carpeta [`docs/`](docs/):
 - [Descripción del proyecto](docs/descripcion-del-proyecto.md)
 - [Requerimientos (funcionales)](docs/requerimientos_funcionales.md)
 - [Requerimientos (No funcionales)](docs/requerimientos_no_funcionales.md)
-- ADRs (decisiones de arquitectura) *(en progreso)*
+- [ADRs (decisiones de arquitectura)](docs/adr/)
 - Diagramas de secuencia en PlantUML *(en progreso)*
 - Queries y Actions *(en progreso)*
 

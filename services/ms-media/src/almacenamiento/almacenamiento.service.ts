@@ -9,15 +9,18 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
 
-export const BUCKET_ORIGINALES = process.env.MINIO_BUCKET_ORIGINALES || 'originales';
-export const BUCKET_MINIATURAS = process.env.MINIO_BUCKET_MINIATURAS || 'miniaturas';
+export const BUCKET_ORIGINALES = process.env.ALMACEN_BUCKET_ORIGINALES || 'originales';
+export const BUCKET_MINIATURAS = process.env.ALMACEN_BUCKET_MINIATURAS || 'miniaturas';
 
 /**
- * Almacenamiento de archivos en MinIO (ADR 0005).
+ * Almacenamiento de archivos compatible con S3 (ADR 0005, ADR 0010).
  *
  * Los dos espacios son privados: nada se sirve en abierto. Para mostrar un
  * archivo se firma una URL con vencimiento corto, y al cliente solo se le
  * firman miniaturas (RNF-04, HT-07).
+ *
+ * El servidor concreto es intercambiable porque todo pasa por la API de S3:
+ * el proyecto usa RustFS, y el mismo codigo sirve con cualquier otro.
  */
 @Injectable()
 export class AlmacenamientoService implements OnModuleInit {
@@ -30,19 +33,19 @@ export class AlmacenamientoService implements OnModuleInit {
 
   constructor() {
     this.cliente = new S3Client({
-      region: process.env.MINIO_REGION || 'us-east-1',
-      endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-      // MinIO usa rutas (`/bucket/clave`) en lugar de subdominios.
+      region: process.env.ALMACEN_REGION || 'us-east-1',
+      endpoint: process.env.ALMACEN_ENDPOINT || 'http://localhost:9000',
+      // El almacen usa rutas (`/bucket/clave`) en lugar de subdominios.
       forcePathStyle: true,
       credentials: {
-        accessKeyId: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-        secretAccessKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+        accessKeyId: process.env.ALMACEN_ACCESS_KEY || 'galeriaprivada',
+        secretAccessKey: process.env.ALMACEN_SECRET_KEY || 'galeriaprivada2026',
       },
     });
   }
 
   async onModuleInit() {
-    // MinIO puede tardar en arrancar dentro de docker-compose.
+    // El almacen puede tardar en arrancar dentro de docker-compose.
     for (const bucket of [BUCKET_ORIGINALES, BUCKET_MINIATURAS]) {
       await this.asegurarBucket(bucket);
     }
@@ -95,10 +98,10 @@ export class AlmacenamientoService implements OnModuleInit {
       { expiresIn: segundos },
     );
 
-    // Dentro de docker-compose el servicio llega a MinIO por el nombre del
+    // Dentro de docker-compose el servicio llega al almacen por el nombre del
     // contenedor, pero el navegador necesita la dirección pública.
-    const interno = process.env.MINIO_ENDPOINT;
-    const publico = process.env.MINIO_ENDPOINT_PUBLICO;
+    const interno = process.env.ALMACEN_ENDPOINT;
+    const publico = process.env.ALMACEN_ENDPOINT_PUBLICO;
     return interno && publico ? url.replace(interno, publico) : url;
   }
 

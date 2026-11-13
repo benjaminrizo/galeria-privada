@@ -20,7 +20,7 @@ Esto cumple RNF-16 y deja disponible:
 | http://localhost:3001/docs … 3006/docs | Contrato de cada microservicio |
 | http://localhost:8025 | Bandeja de correo de prueba (Mailpit) |
 | http://localhost:15672 | Panel de RabbitMQ (`galeria` / `galeria`) |
-| http://localhost:9001 | Consola de MinIO (`minioadmin` / `minioadmin`) |
+| http://localhost:9001 | Consola del almacén de archivos (`galeriaprivada` / `galeriaprivada2026`) |
 
 La primera vez tarda, porque compila siete imágenes de Node y crea las bases de
 datos.
@@ -98,7 +98,7 @@ toda la lógica de coordinación).
 |---|---|
 | RNF-02 | El código del enlace son 24 bytes aleatorios en base64url (192 bits) |
 | RNF-03 | Contraseñas con `bcrypt`; el login compara también cuando el correo no existe, para no delatar qué cuentas hay |
-| RNF-04 | Dos espacios privados en MinIO; al cliente solo se le firman miniaturas, y las URLs de originales vencen en 15 minutos |
+| RNF-04 | Dos espacios privados en el almacén S3; al cliente solo se le firman miniaturas, y las URLs de originales vencen en 15 minutos |
 | RNF-05 | El gateway valida el token y es el único que lo hace; los servicios reciben ya el `fotografoId` |
 | RNF-06 | `ms-pagos` no tiene ningún campo de tarjeta ni de medio de pago |
 | RNF-07 | La galería carga miniaturas, con `loading="lazy"` y paginación de 60 fotos |
@@ -126,7 +126,7 @@ por HTTP dentro de la red de Docker. Es la historia **HT-10**, marcada como
 ## Desarrollo sin Docker
 
 Cada parte se puede levantar por separado, siempre que haya un PostgreSQL, un
-RabbitMQ y un MinIO a mano:
+RabbitMQ y un almacén compatible con S3 a mano:
 
 ```bash
 cd services/ms-auth

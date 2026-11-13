@@ -89,7 +89,7 @@ El sistema está diseñado con **arquitectura de microservicios**, siguiendo el 
 - **Backend:** Node.js con NestJS (ADR 0006, propuesta)
 - **Base de datos:** PostgreSQL, una base por servicio (RNF-15; ADR 0003, propuesta)
 - **Mensajería:** RabbitMQ (ADR 0004, propuesta)
-- **Almacenamiento de archivos:** MinIO, con URLs temporales (ADR 0005, propuesta)
+- **Almacenamiento de archivos:** RustFS, compatible con S3, con URLs temporales (ADR 0005 y ADR 0010, propuestas)
 - **Contenedores:** Docker y docker-compose
 - **Documentación de APIs:** OpenAPI (Swagger)
 - **Diagramas:** PlantUML
@@ -113,7 +113,7 @@ El sistema está diseñado con **arquitectura de microservicios**, siguiendo el 
 - [x] Diagramas de secuencia
 - [x] Queries y Actions
 - [x] Requerimientos (funcionales y no funcionales)
-- [x] ADRs (0001 a 0009; del 0003 al 0009 están en estado Propuesta, pendientes de que el equipo los acepte)
+- [x] ADRs (0001 a 0010; del 0003 al 0010 están en estado Propuesta, pendientes de que el equipo los acepte)
 - [x] Event storming
 - [x] Implementación de los microservicios — los siete servicios, el frontend y `docker-compose`; ver [Implementación](Implementacion/README.md)
 

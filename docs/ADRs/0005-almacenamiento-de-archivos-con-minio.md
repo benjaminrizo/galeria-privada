@@ -1,7 +1,13 @@
 # ADR 0005: Almacenamiento de archivos con MinIO y URLs temporales
 
-- **Estado:** Propuesta
+- **Estado:** Propuesta · la elección de producto quedó reemplazada por el [ADR 0010](0010-rustfs-en-lugar-de-minio.md)
 - **Fecha:** 4 de noviembre de 2026
+
+> **Nota de noviembre de 2026.** Lo que decide este ADR sigue vigente: espacios
+> privados, URLs firmadas con vencimiento y solo miniaturas para el cliente.
+> Lo que cambió es el producto: MinIO retiró sus imágenes de Docker Hub en
+> septiembre de 2026 y el sistema dejó de poder levantarse. El ADR 0010 explica
+> el cambio a RustFS, que habla la misma API de S3.
 
 ## Contexto
 

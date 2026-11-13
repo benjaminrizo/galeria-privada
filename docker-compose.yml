@@ -7,7 +7,7 @@
 #   http://localhost:3000/docs   contrato del gateway (y /docs en cada servicio)
 #   http://localhost:8025        bandeja de correo de prueba (Mailpit)
 #   http://localhost:15672       panel de RabbitMQ (galeria / galeria)
-#   http://localhost:9001        consola de MinIO (minioadmin / minioadmin)
+#   http://localhost:9001        consola del almacen de archivos (galeriaprivada / galeriaprivada2026)
 
 name: galeria-privada
 
@@ -51,22 +51,24 @@ services:
       timeout: 10s
       retries: 12
 
-  minio:
-    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
-    command: server /data --console-address ":9001"
+  # Almacenamiento de archivos compatible con S3 (ADR 0005, ADR 0010).
+  # Antes era MinIO; sus imagenes desaparecieron de Docker Hub en septiembre
+  # de 2026, asi que se usa RustFS, que habla el mismo protocolo S3 y mantiene
+  # los mismos puertos: 9000 para la API y 9001 para la consola web.
+  almacen:
+    image: rustfs/rustfs:1.0.0
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: galeriaprivada
+      RUSTFS_SECRET_KEY: galeriaprivada2026
     volumes:
-      - datos-minio:/data
+      - datos-almacen:/data
     ports:
       - "9000:9000"
       - "9001:9001"
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
 
   # Servidor de correo de prueba: recoge los correos en una bandeja web en lugar
   # de enviarlos de verdad.
@@ -117,13 +119,13 @@ services:
       DB_USER: media_user
       DB_PASSWORD: media_pass
       DB_NAME: media_db
-      MINIO_ENDPOINT: http://minio:9000
-      # El navegador no resuelve "minio": las URLs firmadas se reescriben a esta.
-      MINIO_ENDPOINT_PUBLICO: ${MINIO_ENDPOINT_PUBLICO:-http://localhost:9000}
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET_ORIGINALES: originales
-      MINIO_BUCKET_MINIATURAS: miniaturas
+      ALMACEN_ENDPOINT: http://almacen:9000
+      # El navegador no resuelve "almacen": las URLs firmadas se reescriben a esta.
+      ALMACEN_ENDPOINT_PUBLICO: ${ALMACEN_ENDPOINT_PUBLICO:-http://localhost:9000}
+      ALMACEN_ACCESS_KEY: galeriaprivada
+      ALMACEN_SECRET_KEY: galeriaprivada2026
+      ALMACEN_BUCKET_ORIGINALES: originales
+      ALMACEN_BUCKET_MINIATURAS: miniaturas
       URL_MINIATURA_SEGUNDOS: 3600
       URL_ORIGINAL_SEGUNDOS: 900
     ports:
@@ -131,7 +133,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
-      minio: { condition: service_healthy }
+      almacen: { condition: service_started }
     restart: unless-stopped
 
   ms-seleccion:
@@ -219,4 +221,4 @@ services:
 
 volumes:
   datos-postgres:
-  datos-minio:
+  datos-almacen:

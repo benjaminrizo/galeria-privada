@@ -21,7 +21,7 @@ Con eso queda todo en pie (RNF-16):
 | http://localhost:3000/docs | Contrato OpenAPI del gateway |
 | http://localhost:8025 | Bandeja de correo de prueba |
 | http://localhost:15672 | Panel de RabbitMQ (`galeria` / `galeria`) |
-| http://localhost:9001 | Consola de MinIO (`minioadmin` / `minioadmin`) |
+| http://localhost:9001 | Consola del almacén de archivos (`galeriaprivada` / `galeriaprivada2026`) |
 
 El recorrido para la demostración, paso a paso, está en
 [docs/Implementacion/README.md](docs/Implementacion/README.md).
@@ -51,7 +51,7 @@ secundarios van por eventos en RabbitMQ.
 
 Cada servicio tiene su propia base de datos (RNF-15) y nadie entra en la de
 otro. React para el frontend, NestJS y TypeScript para el backend, PostgreSQL,
-RabbitMQ, MinIO y Docker Compose.
+RabbitMQ, RustFS como almacenamiento compatible con S3 y Docker Compose.
 
 ## Documentación
 

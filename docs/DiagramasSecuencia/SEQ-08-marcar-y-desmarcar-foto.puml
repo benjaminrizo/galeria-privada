@@ -1,0 +1,55 @@
+@startuml SEQ-08
+title SEQ-08: Marcar y desmarcar una foto (HU-10, HU-11, HU-12)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Cliente" as C
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+participant "ms-galerias" as GAL
+participant "ms-media" as MED
+participant "ms-seleccion" as SEL
+
+== Marcar ==
+C -> GW : PUT /api/c/{codigo}/seleccion/fotos/{fotoId}
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+AUTH --> GW : 200 {galeriaId}
+GW -> GAL : ObtenerGaleria(galeriaId)
+GAL --> GW : 200 {estado, limiteVigente}
+alt la galería no está publicada
+  GW --> C : 409 la galería no admite cambios
+else galería publicada
+  GW -> MED : VerificarFotoDeGaleria(galeriaId, fotoId)
+  alt la foto no pertenece a la galería
+    MED --> GW : 404
+    GW --> C : 404 foto no encontrada
+  else la foto es válida
+    MED --> GW : 200
+    GW -> SEL : MarcarFoto(galeriaId, fotoId, limiteVigente)
+    alt selección ya enviada
+      SEL --> GW : 409 SELECCION_ENVIADA
+      GW --> C : 409
+    else se alcanzó el límite
+      SEL --> GW : 409 LIMITE_ALCANZADO
+      GW --> C : 409 alcanzaste el límite de tu paquete
+    else foto marcada (y guardada)
+      SEL --> GW : 200 {cantidad}
+      GW --> C : 200 {cantidad, limiteVigente}
+    end
+  end
+end
+
+== Desmarcar ==
+C -> GW : DELETE /api/c/{codigo}/seleccion/fotos/{fotoId}
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+AUTH --> GW : 200 {galeriaId}
+GW -> SEL : DesmarcarFoto(galeriaId, fotoId)
+alt selección ya enviada
+  SEL --> GW : 409 SELECCION_ENVIADA
+  GW --> C : 409
+else foto desmarcada
+  SEL --> GW : 200 {cantidad}
+  GW --> C : 200 {cantidad}
+end
+@enduml

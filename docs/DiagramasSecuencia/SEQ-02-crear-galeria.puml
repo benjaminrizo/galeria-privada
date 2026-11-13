@@ -1,0 +1,31 @@
+@startuml SEQ-02
+title SEQ-02: Crear galería (HU-02, HU-04)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-galerias" as GAL
+participant "ms-auth" as AUTH
+
+F -> GW : POST /api/galerias\n{nombre, clienteNombre, clienteCorreo, limiteIncluido}
+GW -> GW : valida el token y obtiene fotografoId
+GW -> GAL : CrearGaleria(fotografoId, datos)
+alt datos inválidos (límite <= 0, nombre vacío)
+  GAL --> GW : 422 DATOS_INVALIDOS
+  GW --> F : 422 error de validación
+else galería creada en estado borrador
+  GAL --> GW : 201 {galeriaId}
+  GW -> AUTH : GenerarEnlaceAcceso(galeriaId)
+  alt enlace generado
+    AUTH --> GW : 201 {codigo}
+    GW --> F : 201 {galeria, enlace}
+  else falla al generar el enlace
+    AUTH --> GW : error
+    GW -> GAL : EliminarGaleria(galeriaId, fotografoId)\n(compensación)
+    GAL --> GW : 204
+    GW --> F : 503 no se pudo crear la galería
+  end
+end
+@enduml

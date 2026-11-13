@@ -1,0 +1,47 @@
+@startuml SEQ-05
+title SEQ-05: Subir fotos y generar miniaturas (HU-07, HU-08)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-galerias" as GAL
+participant "ms-media" as MED
+database "Almacenamiento\nde archivos" as STO
+queue "Broker" as MQ
+
+F -> GW : POST /api/galerias/{id}/fotos\n(varias imágenes)
+GW -> GW : valida el token y obtiene fotografoId
+GW -> GAL : ObtenerGaleria(id, fotografoId)
+alt la galería no existe o no es del fotógrafo
+  GAL --> GW : 404 GALERIA_NO_ENCONTRADA
+  GW --> F : 404
+else galería válida
+  GAL --> GW : 200
+  GW -> MED : SubirFotos(galeriaId, archivos)
+  loop por cada archivo
+    alt formato no permitido
+      MED -> MED : marca el archivo como rechazado
+    else formato permitido
+      MED -> STO : guarda el original (privado)
+      MED -> MED : registra la foto en estado pendiente
+      MED -> MQ : publica FotoSubida {fotoId, galeriaId}
+    end
+  end
+  MED --> GW : 202 {aceptadas, rechazadas}
+  GW --> F : 202 las fotos se están procesando
+end
+
+== En segundo plano (cola de trabajo) ==
+MQ -> MED : FotoSubida
+MED -> MED : estado = procesando
+MED -> STO : lee el original
+MED -> MED : genera la miniatura
+alt miniatura generada
+  MED -> STO : guarda la miniatura
+  MED -> MED : estado = lista
+else falla el procesamiento
+  MED -> MED : estado = error\n(las demás fotos no se afectan)
+end
+@enduml

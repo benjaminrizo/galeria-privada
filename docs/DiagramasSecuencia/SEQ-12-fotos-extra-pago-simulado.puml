@@ -1,0 +1,46 @@
+@startuml SEQ-12
+title SEQ-12: Precio y pedido de fotos extra con pago simulado (HU-19, HU-20 - extra)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+actor "Cliente" as C
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+participant "ms-galerias" as GAL
+participant "ms-pagos" as PAG
+
+== El fotógrafo define el precio ==
+F -> GW : PUT /api/galerias/{id}/precio-foto-extra\n{precio}
+GW -> GW : valida el token y obtiene fotografoId
+GW -> GAL : DefinirPrecioFotoExtra(id, fotografoId, precio)
+alt precio inválido
+  GAL --> GW : 422 DATOS_INVALIDOS
+  GW --> F : 422
+else precio guardado
+  GAL --> GW : 200
+  GW --> F : 200
+end
+
+== El cliente pide fotos extra ==
+C -> GW : POST /api/c/{codigo}/pedidos\n{cantidad}
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+AUTH --> GW : 200 {galeriaId}
+GW -> GAL : ObtenerGaleria(galeriaId)
+GAL --> GW : 200 {estado, precioFotoExtra}
+alt la galería no está publicada o no tiene precio
+  GW --> C : 409 no se pueden pedir fotos extra
+else se puede pedir
+  GW -> PAG : CrearPedido(galeriaId, cantidad, precioUnitario)
+  PAG --> GW : 201 {pedidoId, total}
+  GW -> PAG : ConfirmarPagoSimulado(pedidoId)
+  note right of PAG : No se pide ni se guarda\nningún dato de tarjeta
+  PAG --> GW : 200 confirmado
+  loop hasta lograrlo (reintentos)
+    GW -> GAL : AumentarLimite(galeriaId, cantidad)
+  end
+  GAL --> GW : 200 {limiteVigente}
+  GW --> C : 200 {pedido, limiteVigente}
+end
+@enduml

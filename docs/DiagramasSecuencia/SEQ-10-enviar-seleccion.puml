@@ -1,0 +1,47 @@
+@startuml SEQ-10
+title SEQ-10: Enviar la selección final (HU-13, HU-18)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Cliente" as C
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+participant "ms-seleccion" as SEL
+participant "ms-galerias" as GAL
+queue "Broker" as MQ
+participant "ms-notificaciones" as NOT
+participant "Servicio de correo" as MAIL
+
+C -> GW : POST /api/c/{codigo}/seleccion/envio
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+AUTH --> GW : 200 {galeriaId}
+GW -> SEL : EnviarSeleccion(galeriaId)
+alt no hay fotos marcadas
+  SEL --> GW : 422 SELECCION_VACIA
+  GW --> C : 422 debes elegir al menos una foto
+else la selección ya fue enviada
+  SEL --> GW : 409 SELECCION_ENVIADA
+  GW --> C : 409
+else selección enviada y bloqueada
+  SEL --> GW : 200 {cantidad}
+  loop hasta lograrlo (reintentos)
+    GW -> GAL : MarcarSeleccionEnviada(galeriaId)
+  end
+  GAL --> GW : 200 {nombre, fotografoId}
+  GW -> AUTH : ObtenerFotografo(fotografoId)
+  AUTH --> GW : 200 {nombre, correo}
+  GW -> MQ : publica SeleccionEnviada\n{galeriaId, nombre, correoFotografo, cantidad}
+  GW --> C : 200 selección enviada
+end
+
+== En segundo plano ==
+MQ -> NOT : SeleccionEnviada
+NOT -> NOT : registra la notificación (pendiente)
+NOT -> MAIL : envía el correo al fotógrafo
+alt envío correcto
+  NOT -> NOT : estado = enviada
+else falla el envío
+  NOT -> NOT : estado = pendiente, intentos + 1\n(se reintenta)
+end
+@enduml

@@ -1,0 +1,32 @@
+@startuml SEQ-03
+title SEQ-03: Editar galería (HU-05)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-seleccion" as SEL
+participant "ms-galerias" as GAL
+
+F -> GW : PATCH /api/galerias/{id}\n{nombre?, limiteIncluido?}
+GW -> GW : valida el token y obtiene fotografoId
+opt el cambio incluye el límite
+  GW -> SEL : ObtenerSeleccion(galeriaId)
+  SEL --> GW : 200 {cantidad de fotos marcadas}
+end
+GW -> GAL : EditarGaleria(id, fotografoId, cambios, cantidadMarcadas)
+alt la galería no existe o no es del fotógrafo
+  GAL --> GW : 404 GALERIA_NO_ENCONTRADA
+  GW --> F : 404
+else el nuevo límite es menor a lo ya seleccionado
+  GAL --> GW : 409 LIMITE_MENOR_A_SELECCION
+  GW --> F : 409 el límite no puede ser menor a las fotos ya elegidas
+else datos inválidos
+  GAL --> GW : 422 DATOS_INVALIDOS
+  GW --> F : 422
+else cambios guardados
+  GAL --> GW : 200 {galeria}
+  GW --> F : 200 {galeria}
+end
+@enduml

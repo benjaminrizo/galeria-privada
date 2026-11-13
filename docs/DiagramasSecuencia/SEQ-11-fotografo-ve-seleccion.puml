@@ -1,0 +1,28 @@
+@startuml SEQ-11
+title SEQ-11: El fotógrafo ve la selección enviada (HU-14, HU-16)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-galerias" as GAL
+participant "ms-seleccion" as SEL
+participant "ms-media" as MED
+
+F -> GW : GET /api/galerias/{id}/seleccion
+GW -> GW : valida el token y obtiene fotografoId
+GW -> GAL : ObtenerGaleria(id, fotografoId)
+alt la galería no existe o no es del fotógrafo
+  GAL --> GW : 404 GALERIA_NO_ENCONTRADA
+  GW --> F : 404
+else galería del fotógrafo
+  GAL --> GW : 200 {nombre, estado}
+  GW -> SEL : ObtenerSeleccion(id)
+  SEL --> GW : 200 {estado, fotos [{fotoId, comentario}]}
+  GW -> MED : ObtenerFotos(fotoIds)
+  MED --> GW : 200 {nombre de archivo, miniatura, URL temporal del original}
+  GW -> GW : une cada foto con su comentario
+  GW --> F : 200 {galería, estado, fotos con comentario}
+end
+@enduml

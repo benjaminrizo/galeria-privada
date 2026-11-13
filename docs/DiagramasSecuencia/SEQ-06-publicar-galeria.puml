@@ -1,0 +1,47 @@
+@startuml SEQ-06
+title SEQ-06: Publicar galería (HU-06, HU-17)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-media" as MED
+participant "ms-galerias" as GAL
+participant "ms-auth" as AUTH
+queue "Broker" as MQ
+participant "ms-notificaciones" as NOT
+participant "Servicio de correo" as MAIL
+
+F -> GW : POST /api/galerias/{id}/publicacion
+GW -> GW : valida el token y obtiene fotografoId
+GW -> MED : ContarFotos(galeriaId)
+MED --> GW : 200 {total}
+GW -> GAL : PublicarGaleria(id, fotografoId, cantidadFotos)
+alt la galería no existe o no es del fotógrafo
+  GAL --> GW : 404 GALERIA_NO_ENCONTRADA
+  GW --> F : 404
+else la galería no está en borrador
+  GAL --> GW : 409 ESTADO_INVALIDO
+  GW --> F : 409
+else no tiene fotos
+  GAL --> GW : 422 SIN_FOTOS
+  GW --> F : 422 debe subir al menos una foto
+else galería publicada
+  GAL --> GW : 200 {nombre, clienteNombre, clienteCorreo}
+  GW -> AUTH : ObtenerEnlaceDeGaleria(galeriaId)
+  AUTH --> GW : 200 {codigo}
+  GW -> MQ : publica GaleriaPublicada\n{galeriaId, nombre, cliente, enlace}
+  GW --> F : 200 galería publicada
+end
+
+== En segundo plano ==
+MQ -> NOT : GaleriaPublicada
+NOT -> NOT : registra la notificación (pendiente)
+NOT -> MAIL : envía el correo al cliente con el enlace
+alt envío correcto
+  NOT -> NOT : estado = enviada
+else falla el envío
+  NOT -> NOT : estado = pendiente, intentos + 1\n(se reintenta)
+end
+@enduml

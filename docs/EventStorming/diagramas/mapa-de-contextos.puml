@@ -1,0 +1,43 @@
+@startuml mapa-de-contextos
+title Mapa de contextos – Galería Privada
+skinparam componentStyle rectangle
+skinparam shadowing false
+left to right direction
+
+actor "Fotógrafo" as FOT
+actor "Cliente" as CLI
+
+component "API Gateway\n(orquestador)" as GW
+
+package "Contextos delimitados" {
+  component "Identidad y Acceso\n(ms-auth)" as AUTH
+  component "Gestión de Galerías\n(ms-galerias)" as GAL
+  component "Medios\n(ms-media)" as MED
+  component "Selección\n(ms-seleccion)" as SEL
+  component "Notificaciones\n(ms-notificaciones)" as NOT
+  component "Pagos – extra\n(ms-pagos)" as PAG #DDDDDD
+}
+
+queue "Broker de mensajes\n(RabbitMQ o Redis)" as MQ
+cloud "Servicio de correo" as MAIL
+
+FOT --> GW
+CLI --> GW
+
+GW --> AUTH : HTTP\n(orquesta)
+GW --> GAL : HTTP\n(orquesta)
+GW --> MED : HTTP\n(orquesta)
+GW --> SEL : HTTP\n(orquesta)
+GW --> PAG : HTTP\n(orquesta)
+
+GW ..> MQ : GaleriaPublicada\nSeleccionEnviada
+GAL ..> MQ : GaleriaEliminada
+MED ..> MQ : FotoSubida
+
+MQ ..> NOT : GaleriaPublicada\nSeleccionEnviada
+MQ ..> MED : FotoSubida\nGaleriaEliminada
+MQ ..> SEL : GaleriaEliminada
+MQ ..> AUTH : GaleriaEliminada
+
+NOT --> MAIL : envía correos
+@enduml

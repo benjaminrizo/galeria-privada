@@ -1,0 +1,26 @@
+@startuml SEQ-09
+title SEQ-09: Guardar comentario de retoque (HU-15)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Cliente" as C
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+participant "ms-seleccion" as SEL
+
+C -> GW : PUT /api/c/{codigo}/seleccion/fotos/{fotoId}/comentario\n{comentario}
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+AUTH --> GW : 200 {galeriaId}
+GW -> SEL : GuardarComentario(galeriaId, fotoId, comentario)
+alt la foto no está marcada
+  SEL --> GW : 409 FOTO_NO_MARCADA
+  GW --> C : 409 primero debes marcar la foto
+else la selección ya fue enviada
+  SEL --> GW : 409 SELECCION_ENVIADA
+  GW --> C : 409
+else comentario guardado
+  SEL --> GW : 200
+  GW --> C : 200
+end
+@enduml

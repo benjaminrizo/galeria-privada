@@ -1,0 +1,108 @@
+@startuml modelo-de-datos
+title Modelo de datos lógico – una base de datos por servicio
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "ms-auth" {
+  entity fotografos {
+    * id : UUID <<PK>>
+    --
+    * nombre : texto
+    * correo : texto <<único>>
+    * password_hash : texto
+    * creado_en : fecha-hora
+  }
+  entity accesos_galeria {
+    * id : UUID <<PK>>
+    --
+    * galeria_id : UUID
+    * codigo : texto <<único>>
+    * activo : booleano
+    * creado_en : fecha-hora
+  }
+}
+
+package "ms-galerias" {
+  entity galerias {
+    * id : UUID <<PK>>
+    --
+    * fotografo_id : UUID
+    * nombre : texto
+    * cliente_nombre : texto
+    * cliente_correo : texto
+    * limite_incluido : entero
+    * limite_extra : entero
+    precio_foto_extra : decimal
+    * estado : borrador | publicada | seleccion_enviada
+    * creado_en : fecha-hora
+    publicada_en : fecha-hora
+  }
+}
+
+package "ms-media" {
+  entity fotos {
+    * id : UUID <<PK>>
+    --
+    * galeria_id : UUID
+    * nombre_archivo : texto
+    * clave_original : texto
+    clave_miniatura : texto
+    * estado_procesamiento : pendiente | procesando | lista | error
+    * creado_en : fecha-hora
+  }
+}
+
+package "ms-seleccion" {
+  entity selecciones {
+    * id : UUID <<PK>>
+    --
+    * galeria_id : UUID <<único>>
+    * estado : en_curso | enviada
+    enviada_en : fecha-hora
+  }
+  entity fotos_seleccionadas {
+    * seleccion_id : UUID <<PK, FK>>
+    * foto_id : UUID <<PK>>
+    --
+    comentario : texto
+    * marcada_en : fecha-hora
+  }
+}
+
+package "ms-pagos (extra)" {
+  entity pedidos {
+    * id : UUID <<PK>>
+    --
+    * galeria_id : UUID
+    * cantidad_fotos : entero
+    * precio_unitario : decimal
+    * total : decimal
+    * estado : pendiente | confirmado
+    * creado_en : fecha-hora
+    confirmado_en : fecha-hora
+  }
+}
+
+package "ms-notificaciones" {
+  entity notificaciones {
+    * id : UUID <<PK>>
+    --
+    * tipo : galeria_publicada | seleccion_enviada
+    * destinatario_correo : texto
+    * contenido : JSON
+    * estado : pendiente | enviada | fallida
+    * intentos : entero
+    * creado_en : fecha-hora
+    enviado_en : fecha-hora
+  }
+}
+
+selecciones ||--o{ fotos_seleccionadas
+
+galerias ||..o{ accesos_galeria : galeria_id\n(sin FK)
+galerias ||..o{ fotos : galeria_id\n(sin FK)
+galerias ||..o| selecciones : galeria_id\n(sin FK)
+galerias ||..o{ pedidos : galeria_id\n(sin FK)
+fotos ||..o{ fotos_seleccionadas : foto_id\n(sin FK)
+@enduml

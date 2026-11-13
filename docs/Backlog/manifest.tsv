@@ -1,0 +1,40 @@
+E1	[E1] Épica: Acceso	epica,E1	issues/E1.md
+E2	[E2] Épica: Sesiones y galerías	epica,E2	issues/E2.md
+E3	[E3] Épica: Fotos	epica,E3	issues/E3.md
+E4	[E4] Épica: Selección	epica,E4	issues/E4.md
+E5	[E5] Épica: Comentarios de retoque	epica,E5	issues/E5.md
+E6	[E6] Épica: Notificaciones	epica,E6	issues/E6.md
+E7	[E7] Épica: Fotos extra con pago simulado	epica,E7	issues/E7.md
+E8	[E8] Épica: Fundamentos técnicos	epica,E8	issues/E8.md
+HU-01	[HU-01] Registro e inicio de sesión del fotógrafo	historia-usuario,MVP,E1	issues/HU-01.md
+HU-02	[HU-02] Enlace privado y único por galería	historia-usuario,MVP,E1	issues/HU-02.md
+HU-03	[HU-03] Acceso del cliente con el enlace, sin cuenta	historia-usuario,MVP,E1	issues/HU-03.md
+HU-04	[HU-04] Crear una sesión	historia-usuario,MVP,E2	issues/HU-04.md
+HU-05	[HU-05] Editar y eliminar sesiones	historia-usuario,MVP,E2	issues/HU-05.md
+HU-06	[HU-06] Estados de la galería y publicación	historia-usuario,MVP,E2	issues/HU-06.md
+HU-07	[HU-07] Subir varias fotos a una sesión	historia-usuario,MVP,E3	issues/HU-07.md
+HU-08	[HU-08] Miniaturas automáticas	historia-usuario,MVP,E3	issues/HU-08.md
+HU-09	[HU-09] El cliente solo ve versiones reducidas	historia-usuario,MVP,E3	issues/HU-09.md
+HU-10	[HU-10] Marcar y desmarcar fotos	historia-usuario,MVP,E4	issues/HU-10.md
+HU-11	[HU-11] Contador y bloqueo al llegar al límite	historia-usuario,MVP,E4	issues/HU-11.md
+HU-12	[HU-12] Guardar la selección para continuar después	historia-usuario,MVP,E4	issues/HU-12.md
+HU-13	[HU-13] Enviar la selección final	historia-usuario,MVP,E4	issues/HU-13.md
+HU-14	[HU-14] El fotógrafo ve la selección enviada	historia-usuario,MVP,E4	issues/HU-14.md
+HU-15	[HU-15] Comentario de retoque por foto	historia-usuario,Despues,E5	issues/HU-15.md
+HU-16	[HU-16] El fotógrafo ve los comentarios junto a cada foto	historia-usuario,Despues,E5	issues/HU-16.md
+HU-17	[HU-17] Correo al cliente cuando se publica su galería	historia-usuario,Despues,E6	issues/HU-17.md
+HU-18	[HU-18] Correo al fotógrafo cuando el cliente envía su selección	historia-usuario,Despues,E6	issues/HU-18.md
+HU-19	[HU-19] Definir el precio de las fotos extra	historia-usuario,Extra,E7	issues/HU-19.md
+HU-20	[HU-20] Pedir fotos extra con pago simulado	historia-usuario,Extra,E7	issues/HU-20.md
+HT-01	[HT-01] Estructura del repositorio y docker-compose	historia-tecnica,MVP,E8	issues/HT-01.md
+HT-02	[HT-02] API Gateway: punto de entrada y validación de sesión	historia-tecnica,MVP,E8	issues/HT-02.md
+HT-03	[HT-03] Base de datos propia por servicio	historia-tecnica,MVP,E8	issues/HT-03.md
+HT-04	[HT-04] Contratos OpenAPI por servicio	historia-tecnica,MVP,E8	issues/HT-04.md
+HT-05	[HT-05] Broker de mensajes y eventos asíncronos	historia-tecnica,Despues,E8	issues/HT-05.md
+HT-06	[HT-06] Procesamiento asíncrono de miniaturas	historia-tecnica,MVP,E8	issues/HT-06.md
+HT-07	[HT-07] Almacenamiento privado de originales con enlaces temporales	historia-tecnica,MVP,E8	issues/HT-07.md
+HT-08	[HT-08] Hash seguro de contraseñas	historia-tecnica,MVP,E8	issues/HT-08.md
+HT-09	[HT-09] Generación de códigos aleatorios para enlaces	historia-tecnica,MVP,E8	issues/HT-09.md
+HT-10	[HT-10] HTTPS en toda la comunicación	historia-tecnica,Despues,E8	issues/HT-10.md
+HT-11	[HT-11] Frontend responsive en español	historia-tecnica,MVP,E8	issues/HT-11.md
+HT-12	[HT-12] Validación de la selección orquestada por el gateway	historia-tecnica,MVP,E8	issues/HT-12.md

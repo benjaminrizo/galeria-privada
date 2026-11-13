@@ -1,0 +1,40 @@
+@startuml SEQ-04
+title SEQ-04: Eliminar galería (HU-05)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-galerias" as GAL
+queue "Broker" as MQ
+participant "ms-media" as MED
+participant "ms-seleccion" as SEL
+participant "ms-auth" as AUTH
+
+F -> GW : DELETE /api/galerias/{id}
+GW -> GW : valida el token y obtiene fotografoId
+GW -> GAL : EliminarGaleria(id, fotografoId)
+alt la galería no existe o no es del fotógrafo
+  GAL --> GW : 404 GALERIA_NO_ENCONTRADA
+  GW --> F : 404
+else galería eliminada
+  GAL -> GAL : borra la galería
+  GAL -> MQ : publica GaleriaEliminada {galeriaId}
+  GAL --> GW : 204
+  GW --> F : 204 galería eliminada
+end
+
+note over MQ, AUTH : Limpieza con consistencia eventual (ADR 0008)
+par cada servicio reacciona por su cuenta
+  MQ -> MED : GaleriaEliminada
+  MED -> MED : borra fotos y archivos de la galería
+else
+  MQ -> SEL : GaleriaEliminada
+  SEL -> SEL : borra la selección y sus comentarios
+else
+  MQ -> AUTH : GaleriaEliminada
+  AUTH -> AUTH : borra el enlace de acceso
+end
+note over AUTH : A partir de aquí el enlace del cliente deja de funcionar
+@enduml

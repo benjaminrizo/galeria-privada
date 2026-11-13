@@ -1,0 +1,33 @@
+@startuml SEQ-01
+title SEQ-01: Registro e inicio de sesión del fotógrafo (HU-01)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Fotógrafo" as F
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+
+== Registro ==
+F -> GW : POST /api/auth/registro\n{nombre, correo, password}
+GW -> AUTH : RegistrarFotografo
+AUTH -> AUTH : valida correo único y\nguarda el hash de la contraseña
+alt correo ya registrado
+  AUTH --> GW : 409 CORREO_DUPLICADO
+  GW --> F : 409 el correo ya está registrado
+else registro exitoso
+  AUTH --> GW : 201 {fotografoId}
+  GW --> F : 201 cuenta creada
+end
+
+== Inicio de sesión ==
+F -> GW : POST /api/auth/login\n{correo, password}
+GW -> AUTH : IniciarSesion
+alt credenciales válidas
+  AUTH --> GW : 200 {token}
+  GW --> F : 200 {token}
+else credenciales inválidas
+  AUTH --> GW : 401 CREDENCIALES_INVALIDAS
+  GW --> F : 401 credenciales inválidas
+end
+@enduml

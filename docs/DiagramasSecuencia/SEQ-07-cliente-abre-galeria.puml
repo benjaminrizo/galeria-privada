@@ -1,0 +1,37 @@
+@startuml SEQ-07
+title SEQ-07: El cliente abre su galería con el enlace (HU-03, HU-09, HU-11)
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Cliente" as C
+participant "API Gateway" as GW
+participant "ms-auth" as AUTH
+participant "ms-galerias" as GAL
+participant "ms-media" as MED
+participant "ms-seleccion" as SEL
+
+C -> GW : GET /api/c/{codigo}
+GW -> AUTH : ResolverCodigoDeAcceso(codigo)
+alt el código no existe
+  AUTH --> GW : 404
+  GW --> C : 404 galería no encontrada
+else código válido
+  AUTH --> GW : 200 {galeriaId}
+  GW -> GAL : ObtenerGaleria(galeriaId)
+  GAL --> GW : 200 {nombre, estado, limiteVigente}
+  alt la galería está en borrador
+    GW --> C : 403 galería no disponible
+  else la galería está publicada o con selección enviada
+    par consultas en paralelo
+      GW -> MED : ListarFotos(galeriaId)
+      MED --> GW : 200 {fotos con URL de miniatura}
+    else
+      GW -> SEL : ObtenerSeleccion(galeriaId)
+      SEL --> GW : 200 {estado, fotos marcadas, cantidad}
+    end
+    GW -> GW : combina los resultados\n(nunca incluye originales)
+    GW --> C : 200 {galería, fotos, marcadas, contador X de N}
+  end
+end
+@enduml

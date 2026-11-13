@@ -1,0 +1,222 @@
+# Galería Privada · todo el sistema con un solo comando (RNF-16):
+#
+#   docker compose up --build
+#
+# Después:
+#   http://localhost:8080        la aplicación
+#   http://localhost:3000/docs   contrato del gateway (y /docs en cada servicio)
+#   http://localhost:8025        bandeja de correo de prueba (Mailpit)
+#   http://localhost:15672       panel de RabbitMQ (galeria / galeria)
+#   http://localhost:9001        consola de MinIO (minioadmin / minioadmin)
+
+name: galeria-privada
+
+x-postgres: &postgres
+  DB_HOST: postgres
+  DB_PORT: 5432
+
+x-broker: &broker
+  RABBITMQ_URL: amqp://galeria:galeria@rabbitmq:5672
+
+services:
+  # ---------------------------------------------------------------- infraestructura
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - datos-postgres:/var/lib/postgresql/data
+      # Crea una base y un usuario por servicio la primera vez (ADR 0003).
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: galeria
+      RABBITMQ_DEFAULT_PASS: galeria
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  minio:
+    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - datos-minio:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # Servidor de correo de prueba: recoge los correos en una bandeja web en lugar
+  # de enviarlos de verdad.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  # ---------------------------------------------------------------- microservicios
+  ms-auth:
+    build: ./services/ms-auth
+    environment:
+      <<: [*postgres, *broker]
+      PORT: 3001
+      DB_USER: auth_user
+      DB_PASSWORD: auth_pass
+      DB_NAME: auth_db
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-desarrollo}
+      JWT_EXPIRA_EN: 12h
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  ms-galerias:
+    build: ./services/ms-galerias
+    environment:
+      <<: [*postgres, *broker]
+      PORT: 3002
+      DB_USER: galerias_user
+      DB_PASSWORD: galerias_pass
+      DB_NAME: galerias_db
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  ms-media:
+    build: ./services/ms-media
+    environment:
+      <<: [*postgres, *broker]
+      PORT: 3003
+      DB_USER: media_user
+      DB_PASSWORD: media_pass
+      DB_NAME: media_db
+      MINIO_ENDPOINT: http://minio:9000
+      # El navegador no resuelve "minio": las URLs firmadas se reescriben a esta.
+      MINIO_ENDPOINT_PUBLICO: ${MINIO_ENDPOINT_PUBLICO:-http://localhost:9000}
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_ORIGINALES: originales
+      MINIO_BUCKET_MINIATURAS: miniaturas
+      URL_MINIATURA_SEGUNDOS: 3600
+      URL_ORIGINAL_SEGUNDOS: 900
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    restart: unless-stopped
+
+  ms-seleccion:
+    build: ./services/ms-seleccion
+    environment:
+      <<: [*postgres, *broker]
+      PORT: 3004
+      DB_USER: seleccion_user
+      DB_PASSWORD: seleccion_pass
+      DB_NAME: seleccion_db
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  ms-notificaciones:
+    build: ./services/ms-notificaciones
+    environment:
+      <<: [*postgres, *broker]
+      PORT: 3005
+      DB_USER: notificaciones_user
+      DB_PASSWORD: notificaciones_pass
+      DB_NAME: notificaciones_db
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      # Mailpit es un servidor de prueba: su certificado no está firmado por nadie.
+      SMTP_TLS_ESTRICTO: "false"
+      CORREO_REMITENTE: Galería Privada <no-responder@galeria.local>
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      mailpit: { condition: service_started }
+    restart: unless-stopped
+
+  ms-pagos:
+    build: ./services/ms-pagos
+    environment:
+      <<: *postgres
+      PORT: 3006
+      DB_USER: pagos_user
+      DB_PASSWORD: pagos_pass
+      DB_NAME: pagos_db
+    ports:
+      - "3006:3006"
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- entrada
+  gateway:
+    build: ./gateway
+    environment:
+      <<: *broker
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-desarrollo}
+      MS_AUTH_URL: http://ms-auth:3001
+      MS_GALERIAS_URL: http://ms-galerias:3002
+      MS_MEDIA_URL: http://ms-media:3003
+      MS_SELECCION_URL: http://ms-seleccion:3004
+      MS_PAGOS_URL: http://ms-pagos:3006
+      # Base de los enlaces privados que se envían al cliente.
+      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      ms-auth: { condition: service_started }
+      ms-galerias: { condition: service_started }
+      ms-media: { condition: service_started }
+      ms-seleccion: { condition: service_started }
+      ms-pagos: { condition: service_started }
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      gateway: { condition: service_started }
+    restart: unless-stopped
+
+volumes:
+  datos-postgres:
+  datos-minio:

@@ -25,23 +25,42 @@ export const BUCKET_MINIATURAS = process.env.ALMACEN_BUCKET_MINIATURAS || 'minia
 @Injectable()
 export class AlmacenamientoService implements OnModuleInit {
   private readonly log = new Logger('Almacenamiento');
+
+  /** Para subir y leer archivos: entra al almacén por la red interna. */
   private readonly cliente: S3Client;
+
+  /**
+   * Solo para firmar las URLs que abre el navegador.
+   *
+   * La firma de S3 incluye el nombre del servidor al que va dirigida la
+   * petición. Dentro de docker-compose el almacén se llama `almacen`, pero el
+   * navegador lo busca en `localhost`, así que una URL firmada con un nombre y
+   * abierta con el otro se rechaza con `SignatureDoesNotMatch`. Por eso se
+   * firma desde el principio con la dirección pública, en lugar de firmar con
+   * la interna y cambiarle el nombre después.
+   */
+  private readonly clienteDeFirma: S3Client;
 
   /** Vencimiento de las URLs firmadas, en segundos. */
   private readonly vigenciaMiniatura = Number(process.env.URL_MINIATURA_SEGUNDOS || 3600);
   private readonly vigenciaOriginal = Number(process.env.URL_ORIGINAL_SEGUNDOS || 900);
 
   constructor() {
-    this.cliente = new S3Client({
+    const interno = process.env.ALMACEN_ENDPOINT || 'http://localhost:9000';
+    const publico = process.env.ALMACEN_ENDPOINT_PUBLICO || interno;
+
+    const comun = {
       region: process.env.ALMACEN_REGION || 'us-east-1',
-      endpoint: process.env.ALMACEN_ENDPOINT || 'http://localhost:9000',
-      // El almacen usa rutas (`/bucket/clave`) en lugar de subdominios.
+      // El almacén usa rutas (`/bucket/clave`) en lugar de subdominios.
       forcePathStyle: true,
       credentials: {
         accessKeyId: process.env.ALMACEN_ACCESS_KEY || 'galeriaprivada',
         secretAccessKey: process.env.ALMACEN_SECRET_KEY || 'galeriaprivada2026',
       },
-    });
+    };
+
+    this.cliente = new S3Client({ ...comun, endpoint: interno });
+    this.clienteDeFirma = new S3Client({ ...comun, endpoint: publico });
   }
 
   async onModuleInit() {
@@ -91,18 +110,14 @@ export class AlmacenamientoService implements OnModuleInit {
     return this.firmar(BUCKET_ORIGINALES, clave, this.vigenciaOriginal);
   }
 
-  private async firmar(bucket: string, clave: string, segundos: number): Promise<string> {
-    const url = await getSignedUrl(
-      this.cliente,
+  private firmar(bucket: string, clave: string, segundos: number): Promise<string> {
+    // Firmada ya con la dirección pública: la URL sale lista para el navegador
+    // y no hay que tocarla después.
+    return getSignedUrl(
+      this.clienteDeFirma,
       new GetObjectCommand({ Bucket: bucket, Key: clave }),
       { expiresIn: segundos },
     );
-
-    // Dentro de docker-compose el servicio llega al almacen por el nombre del
-    // contenedor, pero el navegador necesita la dirección pública.
-    const interno = process.env.ALMACEN_ENDPOINT;
-    const publico = process.env.ALMACEN_ENDPOINT_PUBLICO;
-    return interno && publico ? url.replace(interno, publico) : url;
   }
 
   private async asegurarBucket(bucket: string, intento = 1): Promise<void> {

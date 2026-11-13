@@ -1,0 +1,196 @@
+/* Interfaz en español y usable desde el celular (RNF-10, RNF-11, RNF-12). */
+
+:root {
+  --tinta: #1d2530;
+  --tinta-suave: #5b6472;
+  --borde: #e2e6ec;
+  --fondo: #f6f7f9;
+  --blanco: #ffffff;
+  --acento: #2f6f68;
+  --acento-suave: #e8f2f0;
+  --alerta: #a3341f;
+  --alerta-suave: #fcecea;
+  --radio: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--tinta);
+  background: var(--fondo);
+  line-height: 1.5;
+}
+
+a { color: var(--acento); }
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--blanco);
+  border-bottom: 1px solid var(--borde);
+}
+
+.encabezado h1 { font-size: 1.1rem; margin: 0; }
+
+.contenido { max-width: 1040px; margin: 0 auto; padding: 20px; }
+
+.tarjeta {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.tarjeta h2 { margin-top: 0; font-size: 1rem; }
+
+label { display: block; font-size: 0.85rem; color: var(--tinta-suave); margin-bottom: 4px; }
+
+input, textarea, select {
+  width: 100%;
+  padding: 9px 10px;
+  font: inherit;
+  color: inherit;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--blanco);
+}
+
+textarea { min-height: 64px; resize: vertical; }
+
+.campos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+button {
+  font: inherit;
+  padding: 9px 16px;
+  border: 1px solid var(--acento);
+  border-radius: 8px;
+  background: var(--acento);
+  color: var(--blanco);
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.secundario { background: var(--blanco); color: var(--acento); }
+button.peligro { background: var(--blanco); color: var(--alerta); border-color: var(--alerta); }
+
+.acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+
+.aviso {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--acento-suave);
+  font-size: 0.9rem;
+  margin: 10px 0;
+}
+
+.aviso.error { background: var(--alerta-suave); color: var(--alerta); }
+
+.etiqueta {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  color: var(--tinta-suave);
+}
+
+.etiqueta.publicada { background: var(--acento-suave); color: var(--acento); border-color: var(--acento); }
+.etiqueta.enviada { background: #eef0fb; color: #3a46a0; border-color: #c5cbf0; }
+
+.lista { list-style: none; margin: 0; padding: 0; }
+
+.lista li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.lista li:last-child { border-bottom: none; }
+
+.rejilla {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.foto {
+  position: relative;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+  background: var(--blanco);
+}
+
+.foto.marcada { border-color: var(--acento); }
+
+.foto img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.foto .procesando {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 2;
+  font-size: 0.8rem;
+  color: var(--tinta-suave);
+  background: var(--fondo);
+  text-align: center;
+  padding: 8px;
+}
+
+.foto .pie { display: grid; gap: 6px; padding: 8px; }
+
+.contador {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--blanco);
+  border-bottom: 1px solid var(--borde);
+}
+
+.contador strong { font-size: 1.05rem; }
+
+.enlace-copiable {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.enlace-copiable code {
+  flex: 1 1 260px;
+  padding: 8px 10px;
+  background: var(--fondo);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.vacio { color: var(--tinta-suave); font-size: 0.9rem; }
+
+@media (max-width: 480px) {
+  .contenido { padding: 14px; }
+  .rejilla { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}

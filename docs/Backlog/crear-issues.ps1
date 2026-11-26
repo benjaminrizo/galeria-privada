@@ -19,6 +19,9 @@ param(
 
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
+# .NET no usa la ubicación de PowerShell sino la del proceso: hay que
+# fijarla también, o las rutas relativas del manifiesto no se encuentran.
+[Environment]::CurrentDirectory = $PSScriptRoot
 $sinBom  = New-Object System.Text.UTF8Encoding $false
 $utf8    = [System.Text.Encoding]::UTF8
 $duenio  = $Repo.Split('/')[0]
@@ -37,7 +40,8 @@ function Enviar($ruta, $datos) {
 }
 
 function CuerpoDe($ruta) {
-    $lineas = [System.IO.File]::ReadAllText($ruta, $utf8) -split "`r?`n"
+    $completa = Join-Path $PSScriptRoot $ruta
+    $lineas = [System.IO.File]::ReadAllText($completa, $utf8) -split "`r?`n"
     $i = 0
     if ($lineas.Count -gt 0 -and $lineas[0] -like '# *') { $i = 1 }
     while ($i -lt $lineas.Count -and $lineas[$i].Trim() -eq '') { $i++ }

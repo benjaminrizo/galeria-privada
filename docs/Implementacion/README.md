@@ -108,6 +108,7 @@ toda la lógica de coordinación).
 | RNF-14 | Ningún servicio conoce la dirección de otro: solo el gateway las tiene |
 | RNF-15 | Una base de datos por servicio: cinco en PostgreSQL con su propio usuario (`infra/postgres/init/`) y MongoDB para `ms-pagos` |
 | RNF-16 | `make start` (o `docker compose up -d --build`) |
+| RNF-14 | Traefik es la única puerta (9080) y solo enruta hacia el gateway y el frontend (ADR 0013) |
 
 RNF-01 (HTTPS en toda la comunicación) queda pendiente: en desarrollo todo va
 por HTTP dentro de la red de Docker. Es la historia **HT-10**, marcada como

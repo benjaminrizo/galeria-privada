@@ -10,7 +10,7 @@
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 #
 # Las direcciones son las mismas que en producción (la aplicación sigue en
-# http://localhost:8080), así que no hay que cambiar de URL para probar.
+# http://localhost:9080), así que no hay que cambiar de URL para probar.
 #
 # Aquí solo se añaden los puertos del depurador: Docker Compose CONCATENA las
 # listas de puertos entre archivos, así que repetir los del compose base

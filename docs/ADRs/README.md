@@ -16,6 +16,7 @@ Cada decisión de arquitectura está en su propio archivo.
 | [0010](0010-rustfs-en-lugar-de-minio.md) | RustFS en lugar de MinIO como almacenamiento de archivos | Propuesta |
 | [0011](0011-go-y-mongodb-para-ms-pagos.md) | Go y MongoDB para `ms-pagos` | Propuesta |
 | [0012](0012-entorno-de-desarrollo.md) | Entorno de desarrollo con Docker, migraciones y Makefile | Propuesta |
+| [0013](0013-traefik-como-edge-router.md) | Traefik como edge router delante del API Gateway | Propuesta |
 
 Los ADR 0003 a 0008 salen de los puntos críticos del [event storming](../EventStorming/README.md). Los ADR 0009 y 0010 salieron de la implementación. El 0009, al escribir los consumidores: `GaleriaEliminada` tiene que llegar a tres servicios a la vez, y eso cambia cómo se conecta el broker. El 0010, al levantar el sistema: MinIO retiró sus imágenes y hubo que cambiar de producto sin cambiar la decisión de fondo.
 

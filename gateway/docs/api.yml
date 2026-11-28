@@ -1,0 +1,504 @@
+openapi: 3.0.0
+paths:
+  /api/auth/registro:
+    post:
+      operationId: AutenticacionController_registro
+      summary: G-01 · Registrar fotógrafo (SEQ-01)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroDto'
+      responses:
+        '409':
+          description: CORREO_DUPLICADO
+      tags:
+      - Sesión del fotógrafo
+  /api/auth/login:
+    post:
+      operationId: AutenticacionController_login
+      summary: G-02 · Iniciar sesión (SEQ-01)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '401':
+          description: CREDENCIALES_INVALIDAS
+      tags:
+      - Sesión del fotógrafo
+  /api/galerias:
+    get:
+      operationId: GaleriasController_listar
+      summary: G-03 · Listar mis galerías
+      parameters: []
+      responses:
+        '200':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+    post:
+      operationId: GaleriasController_crear
+      summary: G-04 · Crear galería (SEQ-02) · crea la galería y su enlace
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearGaleriaDto'
+      responses:
+        '201':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/galerias/{id}:
+    get:
+      operationId: GaleriasController_detalle
+      summary: G-05 · Ver detalle de galería
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '401':
+          description: NO_AUTENTICADO
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+    patch:
+      operationId: GaleriasController_editar
+      summary: G-06 · Editar galería (SEQ-03)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarGaleriaDto'
+      responses:
+        '401':
+          description: NO_AUTENTICADO
+        '409':
+          description: LIMITE_MENOR_A_SELECCION
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+    delete:
+      operationId: GaleriasController_eliminar
+      summary: G-07 · Eliminar galería (SEQ-04)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/galerias/{id}/fotos:
+    post:
+      operationId: GaleriasController_subirFotos
+      summary: G-08 · Subir fotos (SEQ-05) · miniaturas en segundo plano
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                archivos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '202':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/galerias/{id}/publicacion:
+    post:
+      operationId: GaleriasController_publicar
+      summary: G-09 · Publicar galería (SEQ-06) · avisa al cliente por correo
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '401':
+          description: NO_AUTENTICADO
+        '409':
+          description: ESTADO_INVALIDO
+        '422':
+          description: SIN_FOTOS
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/galerias/{id}/seleccion:
+    get:
+      operationId: GaleriasController_verSeleccion
+      summary: G-10 · Ver selección enviada (SEQ-11)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/galerias/{id}/precio-foto-extra:
+    put:
+      operationId: GaleriasController_definirPrecio
+      summary: G-11 · Definir precio de foto extra (extra)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefinirPrecioDto'
+      responses:
+        '200':
+          description: ''
+        '401':
+          description: NO_AUTENTICADO
+      tags:
+      - Fotógrafo
+      security:
+      - bearer: []
+  /api/c/{codigo}:
+    get:
+      operationId: ClienteController_abrir
+      summary: G-12 · Abrir galería (SEQ-07)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pagina
+        required: false
+        in: query
+        schema:
+          type: number
+      responses:
+        '200':
+          description: ''
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+      tags:
+      - Cliente (enlace privado)
+  /api/c/{codigo}/seleccion/fotos/{fotoId}:
+    put:
+      operationId: ClienteController_marcar
+      summary: G-13 · Marcar foto (SEQ-08)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+        '409':
+          description: LIMITE_ALCANZADO · SELECCION_ENVIADA
+      tags:
+      - Cliente (enlace privado)
+    delete:
+      operationId: ClienteController_desmarcar
+      summary: G-14 · Desmarcar foto (SEQ-08)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+        '409':
+          description: SELECCION_ENVIADA
+      tags:
+      - Cliente (enlace privado)
+  /api/c/{codigo}/seleccion/fotos/{fotoId}/comentario:
+    put:
+      operationId: ClienteController_comentar
+      summary: G-15 · Guardar comentario de retoque (SEQ-09)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComentarioDto'
+      responses:
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+        '409':
+          description: FOTO_NO_MARCADA · SELECCION_ENVIADA
+      tags:
+      - Cliente (enlace privado)
+  /api/c/{codigo}/seleccion/envio:
+    post:
+      operationId: ClienteController_enviar
+      summary: G-16 · Enviar selección (SEQ-10) · avisa al fotógrafo
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+        '409':
+          description: SELECCION_ENVIADA
+        '422':
+          description: SELECCION_VACIA
+      tags:
+      - Cliente (enlace privado)
+  /api/c/{codigo}/pedidos:
+    post:
+      operationId: ClienteController_pedirFotosExtra
+      summary: G-17 · Pedir fotos extra con pago simulado (SEQ-12, extra)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedirFotosExtraDto'
+      responses:
+        '403':
+          description: GALERIA_NO_DISPONIBLE
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+        '409':
+          description: PRECIO_NO_DEFINIDO · SELECCION_ENVIADA
+      tags:
+      - Cliente (enlace privado)
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el gateway está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además alcanza a los servicios del MVP
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · algún servicio del MVP no responde
+      tags:
+      - Salud
+  /api/salud:
+    get:
+      operationId: SaludController_estado
+      summary: Estado del gateway (ruta histórica)
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+info:
+  title: api-gateway
+  description: 'API pública de Galería Privada: la que usa el frontend. Contrato:
+    docs/QueriesYActions/gateway.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    RegistroDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Laura Gómez
+        correo:
+          type: string
+          example: laura@example.com
+        password:
+          type: string
+          example: unaClaveSegura
+          minLength: 8
+      required:
+      - nombre
+      - correo
+      - password
+    LoginDto:
+      type: object
+      properties:
+        correo:
+          type: string
+          example: laura@example.com
+        password:
+          type: string
+          example: unaClaveSegura
+      required:
+      - correo
+      - password
+    CrearGaleriaDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Sesión de grado · Laura
+        clienteNombre:
+          type: string
+          example: Laura Gómez
+        clienteCorreo:
+          type: string
+          example: laura@example.com
+        limiteIncluido:
+          type: number
+          example: 20
+          minimum: 1
+      required:
+      - nombre
+      - clienteNombre
+      - clienteCorreo
+      - limiteIncluido
+    EditarGaleriaDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Sesión de grado · Laura (final)
+        limiteIncluido:
+          type: number
+          example: 25
+          minimum: 1
+    DefinirPrecioDto:
+      type: object
+      properties:
+        precio:
+          type: number
+          example: 15000
+          minimum: 0.01
+      required:
+      - precio
+    ComentarioDto:
+      type: object
+      properties:
+        comentario:
+          type: string
+          example: Aclarar un poco la piel y recortar el fondo de la derecha.
+      required:
+      - comentario
+    PedirFotosExtraDto:
+      type: object
+      properties:
+        cantidad:
+          type: number
+          example: 3
+          minimum: 1
+      required:
+      - cantidad

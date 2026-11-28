@@ -1,0 +1,170 @@
+openapi: 3.0.0
+paths:
+  /fotografos:
+    post:
+      operationId: FotografosController_registrar
+      summary: A-AUTH-01 · RegistrarFotografo (HU-01)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrarFotografoDto'
+      responses:
+        '201':
+          description: Cuenta creada.
+        '409':
+          description: CORREO_DUPLICADO
+        '422':
+          description: DATOS_INVALIDOS
+      tags:
+      - Fotógrafos
+  /login:
+    post:
+      operationId: FotografosController_iniciarSesion
+      summary: A-AUTH-02 · IniciarSesion (HU-01)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IniciarSesionDto'
+      responses:
+        '200':
+          description: Token firmado.
+        '401':
+          description: CREDENCIALES_INVALIDAS
+      tags:
+      - Fotógrafos
+  /fotografos/{id}:
+    get:
+      operationId: FotografosController_obtener
+      summary: Q-AUTH-03 · ObtenerFotografo (HU-18)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '404':
+          description: FOTOGRAFO_NO_ENCONTRADO
+      tags:
+      - Fotógrafos
+  /accesos:
+    post:
+      operationId: AccesosController_generar
+      summary: A-AUTH-03 · GenerarEnlaceAcceso (HU-02)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerarAccesoDto'
+      responses:
+        '201':
+          description: ''
+      tags:
+      - Accesos a galería
+    get:
+      operationId: AccesosController_porGaleria
+      summary: Q-AUTH-02 · ObtenerEnlaceDeGaleria (HU-02, HU-17)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: query
+        description: UUID
+        schema:
+          type: string
+      responses:
+        '404':
+          description: ACCESO_NO_ENCONTRADO
+      tags:
+      - Accesos a galería
+  /accesos/{codigo}:
+    get:
+      operationId: AccesosController_resolver
+      summary: Q-AUTH-01 · ResolverCodigoDeAcceso (HU-03)
+      parameters:
+      - name: codigo
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '404':
+          description: ACCESO_NO_ENCONTRADO
+      tags:
+      - Accesos a galería
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el proceso está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además hay conexión a la base de datos
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · sin conexión a la base de datos
+      tags:
+      - Salud
+info:
+  title: ms-auth
+  description: 'Identidad y Acceso: cuentas del fotógrafo y enlaces privados de galería.
+    Contrato: docs/QueriesYActions/ms-auth.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    RegistrarFotografoDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Laura Gómez
+        correo:
+          type: string
+          example: laura@example.com
+        password:
+          type: string
+          example: unaClaveSegura
+          minLength: 8
+      required:
+      - nombre
+      - correo
+      - password
+    IniciarSesionDto:
+      type: object
+      properties:
+        correo:
+          type: string
+          example: laura@example.com
+        password:
+          type: string
+          example: unaClaveSegura
+      required:
+      - correo
+      - password
+    GenerarAccesoDto:
+      type: object
+      properties:
+        galeriaId:
+          type: string
+          format: uuid
+      required:
+      - galeriaId

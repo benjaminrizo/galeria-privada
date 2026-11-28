@@ -1,0 +1,287 @@
+openapi: 3.0.0
+paths:
+  /galerias:
+    post:
+      operationId: GaleriasController_crear
+      summary: A-GAL-01 · CrearGaleria (HU-04)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearGaleriaDto'
+      responses:
+        '422':
+          description: DATOS_INVALIDOS
+      tags:
+      - Galerías
+    get:
+      operationId: GaleriasController_listar
+      summary: Q-GAL-01 · ListarGaleriasDeFotografo (HU-04, HU-05)
+      parameters:
+      - name: fotografoId
+        required: true
+        in: query
+        description: UUID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Galerías
+  /galerias/{id}:
+    get:
+      operationId: GaleriasController_obtener
+      summary: Q-GAL-02 · ObtenerGaleria (HU-03, HU-11)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotografoId
+        required: false
+        in: query
+        description: UUID
+        schema:
+          type: string
+      responses:
+        '404':
+          description: GALERIA_NO_ENCONTRADA
+      tags:
+      - Galerías
+    patch:
+      operationId: GaleriasController_editar
+      summary: A-GAL-02 · EditarGaleria (HU-05)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarGaleriaDto'
+      responses:
+        '409':
+          description: LIMITE_MENOR_A_SELECCION
+      tags:
+      - Galerías
+    delete:
+      operationId: GaleriasController_eliminar
+      summary: A-GAL-03 · EliminarGaleria (HU-05) · publica GaleriaEliminada
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotografoId
+        required: true
+        in: query
+        description: UUID
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - Galerías
+  /galerias/{id}/publicacion:
+    post:
+      operationId: GaleriasController_publicar
+      summary: A-GAL-04 · PublicarGaleria (HU-06)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicarGaleriaDto'
+      responses:
+        '409':
+          description: ESTADO_INVALIDO
+        '422':
+          description: SIN_FOTOS
+      tags:
+      - Galerías
+  /galerias/{id}/seleccion-enviada:
+    post:
+      operationId: GaleriasController_marcarSeleccionEnviada
+      summary: A-GAL-05 · MarcarSeleccionEnviada (HU-06, HU-13) · idempotente
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Galerías
+  /galerias/{id}/precio-foto-extra:
+    put:
+      operationId: GaleriasController_definirPrecio
+      summary: A-GAL-06 · DefinirPrecioFotoExtra (HU-19, extra)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefinirPrecioDto'
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Galerías
+  /galerias/{id}/limite-extra:
+    post:
+      operationId: GaleriasController_aumentarLimite
+      summary: A-GAL-07 · AumentarLimite (HU-20, extra)
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AumentarLimiteDto'
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Galerías
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el proceso está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además hay conexión a la base de datos
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · sin conexión a la base de datos
+      tags:
+      - Salud
+info:
+  title: ms-galerias
+  description: 'Gestión de Galerías: sesiones, datos del cliente, límite y estado.
+    Contrato: docs/QueriesYActions/ms-galerias.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    CrearGaleriaDto:
+      type: object
+      properties:
+        fotografoId:
+          type: string
+          format: uuid
+          description: Lo entrega el gateway tras validar el token.
+        nombre:
+          type: string
+          example: Sesión de grado · Laura
+        clienteNombre:
+          type: string
+          example: Laura Gómez
+        clienteCorreo:
+          type: string
+          example: laura@example.com
+        limiteIncluido:
+          type: number
+          example: 20
+          minimum: 1
+      required:
+      - fotografoId
+      - nombre
+      - clienteNombre
+      - clienteCorreo
+      - limiteIncluido
+    EditarGaleriaDto:
+      type: object
+      properties:
+        fotografoId:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Sesión de grado · Laura (final)
+        limiteIncluido:
+          type: number
+          example: 25
+          minimum: 1
+        cantidadMarcadas:
+          type: number
+          example: 12
+          description: Fotos ya marcadas por el cliente; la consulta ms-seleccion
+            y la trae el gateway.
+      required:
+      - fotografoId
+    PublicarGaleriaDto:
+      type: object
+      properties:
+        fotografoId:
+          type: string
+          format: uuid
+        cantidadFotos:
+          type: number
+          example: 48
+          description: Fotos que ms-media reporta para esta galería.
+      required:
+      - fotografoId
+      - cantidadFotos
+    DefinirPrecioDto:
+      type: object
+      properties:
+        fotografoId:
+          type: string
+          format: uuid
+        precio:
+          type: number
+          example: 15000
+          minimum: 0.01
+      required:
+      - fotografoId
+      - precio
+    AumentarLimiteDto:
+      type: object
+      properties:
+        cantidad:
+          type: number
+          example: 5
+          minimum: 1
+      required:
+      - cantidad

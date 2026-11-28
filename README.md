@@ -27,8 +27,9 @@ Con eso queda todo en pie (RNF-16):
 
 | Dirección | Qué es |
 |---|---|
-| http://localhost:8080 | La aplicación |
-| http://localhost:3000/docs | Contrato OpenAPI del gateway |
+| **http://localhost:9080** | **La aplicación · única puerta del sistema** |
+| http://localhost:8081 | Panel de Traefik: qué rutas hay y si responden |
+| http://localhost:9080/docs | Contrato OpenAPI del gateway |
 | http://localhost:8025 | Bandeja de correo de prueba |
 | http://localhost:15672 | Panel de RabbitMQ (`galeria` / `galeria`) |
 | `localhost:27017` | MongoDB de `ms-pagos` (sin contraseña en desarrollo) |
@@ -49,11 +50,31 @@ El sistema sigue los *workspace guidelines* del capítulo 8 de
 | **Workspace heterogéneo** | 5 servicios en NestJS sobre PostgreSQL y `ms-pagos` en Go sobre MongoDB |
 | **Un servicio o el subsistema** | Cada componente tiene su propio `docker-compose`; el sombrilla levanta todo |
 | **Bases de datos locales** | PostgreSQL, MongoDB, RabbitMQ, RustFS (S3) y Mailpit, todas en contenedor |
+| **Edge router** | Traefik delante de todo: una sola dirección y descubrimiento automático de servicios |
 | **Containerización** | Dockerfiles multistage (`dev` / `prod`), código montado desde el host, recarga en caliente y puerto de depuración |
 | **Migraciones** | Esquema versionado en `src/migraciones/`, aplicado al arrancar. Sin `synchronize` |
 | **Pruebas automatizadas** | Jest en NestJS, Vitest en el frontend, `go test` en Go, y ESLint en todos |
 | **Branching y merging** | CI en cada *pull request*: linting, pruebas y construcción de la imagen |
 | **Makefile** | Los mismos targets en los 9 repositorios |
+
+### Cómo entra una petición
+
+```
+navegador  ->  Traefik (9080)  ->  ¿la URL empieza por /api?
+                                      sí  ->  API Gateway  ->  microservicios
+                                      no  ->  frontend
+```
+
+Traefik decide **a dónde** va la petición; el gateway decide **qué hacer** con
+ella. Son dos capas distintas: red y negocio. Traefik descubre los contenedores
+solo, leyendo el socket de Docker, así que añadir un servicio al enrutamiento
+es ponerle dos etiquetas.
+
+Los puertos 3000 a 3006 siguen publicados, pero solo para depurar: ver el
+Swagger de un servicio suelto o probarlo aislado.
+
+Para probar la API sin abrir el navegador está [`api.http`](api.http), que se
+ejecuta desde VS Code con la extensión *REST Client*.
 
 ### Comprobar que está vivo
 

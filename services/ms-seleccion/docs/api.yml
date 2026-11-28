@@ -1,0 +1,155 @@
+openapi: 3.0.0
+paths:
+  /galerias/{galeriaId}/seleccion:
+    get:
+      operationId: SeleccionController_obtener
+      summary: Q-SEL-01 · ObtenerSeleccion (HU-11, HU-12, HU-14, HU-16)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Selección
+  /galerias/{galeriaId}/seleccion/fotos/{fotoId}:
+    put:
+      operationId: SeleccionController_marcar
+      summary: A-SEL-01 · MarcarFoto (HU-10, HU-11, HU-12) · idempotente
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarcarFotoDto'
+      responses:
+        '409':
+          description: LIMITE_ALCANZADO · SELECCION_ENVIADA
+      tags:
+      - Selección
+    delete:
+      operationId: SeleccionController_desmarcar
+      summary: A-SEL-02 · DesmarcarFoto (HU-10)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '409':
+          description: SELECCION_ENVIADA
+      tags:
+      - Selección
+  /galerias/{galeriaId}/seleccion/fotos/{fotoId}/comentario:
+    put:
+      operationId: SeleccionController_guardarComentario
+      summary: A-SEL-03 · GuardarComentario (HU-15)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuardarComentarioDto'
+      responses:
+        '409':
+          description: FOTO_NO_MARCADA · SELECCION_ENVIADA
+      tags:
+      - Selección
+  /galerias/{galeriaId}/seleccion/envio:
+    post:
+      operationId: SeleccionController_enviar
+      summary: A-SEL-04 · EnviarSeleccion (HU-13)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '409':
+          description: SELECCION_ENVIADA
+        '422':
+          description: SELECCION_VACIA
+      tags:
+      - Selección
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el proceso está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además hay conexión a la base de datos
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · sin conexión a la base de datos
+      tags:
+      - Salud
+info:
+  title: ms-seleccion
+  description: 'Selección: fotos elegidas, comentarios de retoque y envío final. Contrato:
+    docs/QueriesYActions/ms-seleccion.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    MarcarFotoDto:
+      type: object
+      properties:
+        limiteVigente:
+          type: number
+          example: 20
+          description: Límite vigente (incluido + extra). Lo calcula el gateway consultando
+            ms-galerias (HT-12).
+      required:
+      - limiteVigente
+    GuardarComentarioDto:
+      type: object
+      properties:
+        comentario:
+          type: string
+          example: Aclarar un poco la piel y recortar el fondo de la derecha.
+      required:
+      - comentario

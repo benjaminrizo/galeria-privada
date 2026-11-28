@@ -21,7 +21,7 @@ services:
       MS_MEDIA_URL: http://host.docker.internal:3003
       MS_SELECCION_URL: http://host.docker.internal:3004
       MS_PAGOS_URL: http://host.docker.internal:3006
-      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:8080}
+      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:9080}
     ports:
       - "3000:3000"
       - "9229:9229"

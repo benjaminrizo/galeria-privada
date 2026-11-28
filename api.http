@@ -1,0 +1,166 @@
+### Galería Privada · pruebas de la API
+#
+# Todo entra por Traefik, en el puerto 9080: el frontend no conoce los puertos
+# internos de los servicios y el navegador tampoco.
+#
+# Para usarlo en VS Code: instala la extensión "REST Client" (Huachao Mao) y
+# pulsa "Send Request" encima de cada petición.
+#
+# El orden importa: las peticiones de abajo usan valores que devuelven las de
+# arriba. Copia el token, el galeriaId y el código del enlace según vayan
+# saliendo y pégalos en las variables.
+
+@entrada = http://localhost:9080
+@token = PEGA_AQUI_EL_TOKEN
+@galeriaId = PEGA_AQUI_EL_ID_DE_LA_GALERIA
+@codigo = PEGA_AQUI_EL_CODIGO_DEL_ENLACE
+@fotoId = PEGA_AQUI_EL_ID_DE_UNA_FOTO
+
+
+### ─── Salud ────────────────────────────────────────────────────────────────
+
+### El gateway está vivo (liveness)
+GET {{entrada}}/ping
+
+### El gateway puede trabajar: alcanza a los servicios del MVP (readiness)
+GET {{entrada}}/health
+
+### Contrato OpenAPI del gateway, a través de Traefik
+GET {{entrada}}/docs
+
+### Salud de cada servicio, por su puerto directo (solo para depurar)
+GET http://localhost:3001/health
+###
+GET http://localhost:3002/health
+###
+GET http://localhost:3003/health
+###
+GET http://localhost:3004/health
+###
+GET http://localhost:3005/health
+###
+GET http://localhost:3006/health
+
+
+### ─── El fotógrafo ─────────────────────────────────────────────────────────
+
+### G-01 · Registrar una cuenta de fotógrafo
+POST {{entrada}}/api/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Gianka",
+  "correo": "gianka@correo.com",
+  "password": "una-clave-bastante-larga"
+}
+
+### G-02 · Iniciar sesión · copia el "token" de la respuesta
+POST {{entrada}}/api/auth/login
+Content-Type: application/json
+
+{
+  "correo": "gianka@correo.com",
+  "password": "una-clave-bastante-larga"
+}
+
+### Q-GAL-01 · Listar mis galerías
+GET {{entrada}}/api/galerias
+Authorization: Bearer {{token}}
+
+### A-GAL-01 · Crear una galería · copia el "galeriaId" de la respuesta
+POST {{entrada}}/api/galerias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Boda de prueba",
+  "clienteNombre": "Cliente de prueba",
+  "clienteCorreo": "cliente@correo.com",
+  "limiteIncluido": 10
+}
+
+### Q-GAL-02 · Ver una galería con su enlace · copia el "codigo"
+GET {{entrada}}/api/galerias/{{galeriaId}}
+Authorization: Bearer {{token}}
+
+### A-GAL-02 · Editar el límite de fotos incluidas
+PATCH {{entrada}}/api/galerias/{{galeriaId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "limiteIncluido": 15
+}
+
+### A-GAL-04 · Publicar la galería · dispara el correo al cliente
+POST {{entrada}}/api/galerias/{{galeriaId}}/publicacion
+Authorization: Bearer {{token}}
+
+
+### ─── El cliente, que entra por el enlace y no tiene cuenta ───────────────
+
+### Abrir la galería con el código · copia un "fotoId"
+GET {{entrada}}/api/c/{{codigo}}
+
+### A-SEL-01 · Marcar una foto
+PUT {{entrada}}/api/c/{{codigo}}/seleccion/fotos/{{fotoId}}
+
+### A-SEL-03 · Dejar un comentario de retoque sobre una foto marcada
+PUT {{entrada}}/api/c/{{codigo}}/seleccion/fotos/{{fotoId}}/comentario
+Content-Type: application/json
+
+{
+  "comentario": "Aclarar un poco el fondo, por favor."
+}
+
+### A-SEL-02 · Desmarcar una foto
+DELETE {{entrada}}/api/c/{{codigo}}/seleccion/fotos/{{fotoId}}
+
+### A-SEL-04 · Enviar la selección · dispara el correo al fotógrafo
+POST {{entrada}}/api/c/{{codigo}}/seleccion/envio
+
+
+### ─── Errores que deben salir ─────────────────────────────────────────────
+# Si estas devuelven 200, hay algo mal.
+
+### 404 GALERIA_NO_ENCONTRADA · identificador que no existe
+GET {{entrada}}/api/galerias/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{token}}
+
+### 401 NO_AUTENTICADO · sin token
+GET {{entrada}}/api/galerias
+
+### 422 DATOS_INVALIDOS · límite de fotos en cero
+POST {{entrada}}/api/galerias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Galería inválida",
+  "clienteNombre": "Cliente",
+  "clienteCorreo": "cliente@correo.com",
+  "limiteIncluido": 0
+}
+
+
+### ─── ms-pagos · el servicio en Go, hablando directo ──────────────────────
+
+### A-PAG-01 · Crear un pedido de fotos extra
+POST http://localhost:3006/pedidos
+Content-Type: application/json
+
+{
+  "galeriaId": "{{galeriaId}}",
+  "cantidadFotos": 5,
+  "precioUnitario": 15000
+}
+
+### 422 DATOS_INVALIDOS · el precio no admite tres decimales
+POST http://localhost:3006/pedidos
+Content-Type: application/json
+
+{
+  "galeriaId": "{{galeriaId}}",
+  "cantidadFotos": 5,
+  "precioUnitario": 10.005
+}

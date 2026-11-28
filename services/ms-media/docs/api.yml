@@ -1,0 +1,131 @@
+openapi: 3.0.0
+paths:
+  /galerias/{galeriaId}/fotos:
+    post:
+      operationId: FotosController_subir
+      summary: A-MED-01 · SubirFotos (HU-07) · procesamiento en segundo plano
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                archivos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '202':
+          description: ''
+      tags:
+      - Fotos
+    get:
+      operationId: FotosController_listar
+      summary: Q-MED-02 · ListarFotos (HU-08, HU-09) · solo miniaturas
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: pagina
+        required: false
+        in: query
+        schema:
+          type: number
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Fotos
+  /galerias/{galeriaId}/fotos/total:
+    get:
+      operationId: FotosController_contar
+      summary: Q-MED-01 · ContarFotos (HU-06)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Fotos
+  /galerias/{galeriaId}/fotos/{fotoId}:
+    get:
+      operationId: FotosController_verificar
+      summary: Q-MED-03 · VerificarFotoDeGaleria (HU-10)
+      parameters:
+      - name: galeriaId
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: fotoId
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '404':
+          description: FOTO_NO_ENCONTRADA
+      tags:
+      - Fotos
+  /fotos:
+    get:
+      operationId: FotosController_porIds
+      summary: Q-MED-04 · ObtenerFotos (HU-14, HU-16) · incluye URL temporal del original
+      parameters:
+      - name: ids
+        required: true
+        in: query
+        description: Identificadores separados por coma.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Fotos
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el proceso está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además hay conexión a la base de datos
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · sin conexión a la base de datos
+      tags:
+      - Salud
+info:
+  title: ms-media
+  description: 'Medios: subida de fotos, miniaturas en segundo plano y entrega protegida.
+    Contrato: docs/QueriesYActions/ms-media.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas: {}

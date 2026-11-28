@@ -97,6 +97,7 @@ Infraestructura, arquitectura de microservicios y seguridad que sostienen las de
 | [HT-16](<issues/HT-16 - Pruebas y análisis estático en integración continua.md>) | Pruebas y análisis estático en integración continua | Historia técnica | MVP | ADR 0012 |
 | [HT-17](<issues/HT-17 - Comprobaciones de vida y de disponibilidad.md>) | Comprobaciones de vida y de disponibilidad | Historia técnica | MVP | ADR 0012 |
 | [HT-18](<issues/HT-18 - Heterogeneidad del stack.md>) | Heterogeneidad del stack | Historia técnica | Extra | ADR 0011 |
+| [HT-19](<issues/HT-19 - Edge router como puerta única del sistema.md>) | Edge router como puerta única del sistema | Historia técnica | MVP | RNF-14, ADR 0013 |
 
 ## Supuestos por validar con el equipo
 

@@ -1,0 +1,49 @@
+openapi: 3.0.0
+paths:
+  /notificaciones/{id}:
+    get:
+      operationId: NotificacionesController_obtener
+      summary: Q-NOT-01 · ConsultarEstadoDeNotificacion
+      parameters:
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+      responses:
+        '404':
+          description: NOTIFICACION_NO_ENCONTRADA
+      tags:
+      - Notificaciones
+  /ping:
+    get:
+      operationId: SaludController_ping
+      summary: Liveness · el proceso está vivo
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - Salud
+  /health:
+    get:
+      operationId: SaludController_health
+      summary: Readiness · además hay conexión a la base de datos
+      parameters: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: NO_LISTO · sin conexión a la base de datos
+      tags:
+      - Salud
+info:
+  title: ms-notificaciones
+  description: 'Notificaciones: correos de galería publicada y selección enviada,
+    con reintentos. Contrato: docs/QueriesYActions/ms-notificaciones.md'
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas: {}

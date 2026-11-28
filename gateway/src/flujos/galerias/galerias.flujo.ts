@@ -218,7 +218,7 @@ export class GaleriasFlujo {
   }
 
   private enlacePublico(codigo: string): string {
-    const base = (process.env.URL_PUBLICA || 'http://localhost:8080').replace(/\/+$/, '');
+    const base = (process.env.URL_PUBLICA || 'http://localhost:9080').replace(/\/+$/, '');
     return `${base}/c/${codigo}`;
   }
 }

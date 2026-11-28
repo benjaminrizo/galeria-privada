@@ -3,8 +3,9 @@
 #   docker compose up --build
 #
 # Después:
-#   http://localhost:8080        la aplicación
-#   http://localhost:3000/docs   contrato del gateway (y /docs en cada servicio)
+#   http://localhost:9080        la aplicación (entra por Traefik)
+#   http://localhost:8081        panel de Traefik: que rutas hay y a donde van
+#   http://localhost:9080/docs   contrato del gateway
 #   http://localhost:8025        bandeja de correo de prueba (Mailpit)
 #   http://localhost:15672       panel de RabbitMQ (galeria / galeria)
 #   http://localhost:9001        consola del almacen de archivos (galeriaprivada / galeriaprivada2026)
@@ -19,6 +20,34 @@ x-broker: &broker
   RABBITMQ_URL: amqp://galeria:galeria@rabbitmq:5672
 
 services:
+  # ------------------------------------------------------------------- entrada
+  # Edge router: recibe TODO el trafico y decide a que contenedor va, segun la
+  # URL. No sustituye al API Gateway, trabaja delante de el:
+  #
+  #   Traefik  -> enruta por direccion. Es capa de red.
+  #   Gateway  -> valida el token y orquesta. Es capa de negocio.
+  #
+  # Descubre los servicios solo, leyendo el socket de Docker: cuando un
+  # contenedor con la etiqueta traefik.enable=true arranca, Traefik lo ve en
+  # milisegundos y empieza a enrutar hacia el, sin reiniciar nada.
+  traefik:
+    image: traefik:v3.6
+    command:
+      # Panel de control sin contrasena: solo para desarrollo local.
+      - "--api.insecure=true"
+      # Escucha a Docker para descubrir servicios automaticamente.
+      - "--providers.docker=true"
+      # Ignora todo contenedor que no lo pida expresamente con una etiqueta.
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "9080:80"     # la puerta del sistema
+      - "8081:8080"   # el panel de control
+    volumes:
+      # Solo lectura: Traefik necesita ver que contenedores hay, nada mas.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   # ---------------------------------------------------------------- infraestructura
   postgres:
     image: postgres:16-alpine
@@ -227,9 +256,17 @@ services:
       MS_SELECCION_URL: http://ms-seleccion:3004
       MS_PAGOS_URL: http://ms-pagos:3006
       # Base de los enlaces privados que se envían al cliente.
-      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:8080}
+      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:9080}
     ports:
       - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      # Todo lo que empiece por /api o /docs es del gateway. La prioridad alta
+      # hace que gane frente a la regla general del frontend.
+      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/health`) || PathPrefix(`/ping`)"
+      - "traefik.http.routers.gateway.entrypoints=web"
+      - "traefik.http.routers.gateway.priority=10"
+      - "traefik.http.services.gateway.loadbalancer.server.port=3000"
     depends_on:
       rabbitmq: { condition: service_healthy }
       ms-auth: { condition: service_started }
@@ -243,8 +280,13 @@ services:
     build:
       context: ./frontend
       target: prod
-    ports:
-      - "8080:80"
+    labels:
+      - "traefik.enable=true"
+      # Regla general: cualquier direccion que no sea del gateway.
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       gateway: { condition: service_started }
     restart: unless-stopped

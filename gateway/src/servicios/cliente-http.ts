@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { ErrorDeNegocio } from '../comun/errores';
 
 /**

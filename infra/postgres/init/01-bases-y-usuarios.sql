@@ -9,14 +9,12 @@ CREATE USER galerias_user      WITH PASSWORD 'galerias_pass';
 CREATE USER media_user         WITH PASSWORD 'media_pass';
 CREATE USER seleccion_user     WITH PASSWORD 'seleccion_pass';
 CREATE USER notificaciones_user WITH PASSWORD 'notificaciones_pass';
-CREATE USER pagos_user         WITH PASSWORD 'pagos_pass';
 
 CREATE DATABASE auth_db           OWNER auth_user;
 CREATE DATABASE galerias_db       OWNER galerias_user;
 CREATE DATABASE media_db          OWNER media_user;
 CREATE DATABASE seleccion_db      OWNER seleccion_user;
 CREATE DATABASE notificaciones_db OWNER notificaciones_user;
-CREATE DATABASE pagos_db          OWNER pagos_user;
 
 -- La extensión de UUID la instala el superusuario en cada base, porque es la
 -- que genera las claves primarias.
@@ -40,6 +38,3 @@ GRANT ALL ON SCHEMA public TO seleccion_user;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 GRANT ALL ON SCHEMA public TO notificaciones_user;
 
-\connect pagos_db
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-GRANT ALL ON SCHEMA public TO pagos_user;

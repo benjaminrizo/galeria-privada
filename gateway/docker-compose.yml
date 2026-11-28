@@ -1,0 +1,32 @@
+# El gateway no tiene sentido aislado: su trabajo es orquestar a los demas
+# (ADR 0002). Para trabajar en el se levanta el sistema desde el repositorio
+# sombrilla y se apunta el gateway local a esos servicios:
+#
+#   cd ../galeria-privada && make dev
+#
+# Este archivo levanta solo el gateway contra servicios que ya esten corriendo
+# en la maquina (los puertos 3001..3006 publicados por el sombrilla).
+name: gateway
+services:
+  gateway:
+    build:
+      context: .
+      target: dev
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-desarrollo}
+      RABBITMQ_URL: amqp://galeria:galeria@host.docker.internal:5672
+      MS_AUTH_URL: http://host.docker.internal:3001
+      MS_GALERIAS_URL: http://host.docker.internal:3002
+      MS_MEDIA_URL: http://host.docker.internal:3003
+      MS_SELECCION_URL: http://host.docker.internal:3004
+      MS_PAGOS_URL: http://host.docker.internal:3006
+      URL_PUBLICA: ${URL_PUBLICA:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

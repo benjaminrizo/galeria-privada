@@ -1,0 +1,54 @@
+# Entorno de DESARROLLO (capítulo 8, Guideline 6).
+#
+# Cambia las imágenes de producción por las de desarrollo y monta el código
+# fuente dentro de los contenedores: se edita en el host y se ejecuta en el
+# contenedor, con recarga en caliente al guardar.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# o, más corto:  make dev
+#
+# El volumen anónimo sobre /app/node_modules evita que el montaje del host
+# tape las dependencias instaladas dentro de la imagen.
+
+services:
+  ms-auth:
+    build: { target: dev }
+    volumes: ["./services/ms-auth/src:/app/src", "/app/node_modules"]
+    ports: ["3001:3001", "9231:9229"]
+
+  ms-galerias:
+    build: { target: dev }
+    volumes: ["./services/ms-galerias/src:/app/src", "/app/node_modules"]
+    ports: ["3002:3002", "9232:9229"]
+
+  ms-media:
+    build: { target: dev }
+    volumes: ["./services/ms-media/src:/app/src", "/app/node_modules"]
+    ports: ["3003:3003", "9233:9229"]
+
+  ms-seleccion:
+    build: { target: dev }
+    volumes: ["./services/ms-seleccion/src:/app/src", "/app/node_modules"]
+    ports: ["3004:3004", "9234:9229"]
+
+  ms-notificaciones:
+    build: { target: dev }
+    volumes: ["./services/ms-notificaciones/src:/app/src", "/app/node_modules"]
+    ports: ["3005:3005", "9235:9229"]
+
+  # En Go la recarga la hace air, que vigila los .go montados.
+  ms-pagos:
+    build: { target: dev }
+    volumes: ["./services/ms-pagos:/app"]
+
+  gateway:
+    build: { target: dev }
+    volumes: ["./gateway/src:/app/src", "/app/node_modules"]
+    ports: ["3000:3000", "9230:9229"]
+
+  # Vite sirve en el 5173; en producción es nginx en el 80.
+  frontend:
+    build: { target: dev }
+    volumes: ["./frontend/src:/app/src", "/app/node_modules"]
+    ports: ["8080:5173"]

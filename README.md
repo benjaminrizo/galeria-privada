@@ -10,8 +10,18 @@ Proyecto de arquitectura de microservicios.
 
 ```bash
 cp .env.example .env          # opcional: los valores por defecto ya sirven
-docker compose up --build
+make start                    # o: docker compose up -d --build
 ```
+
+Para trabajar en el código, con recarga en caliente al guardar:
+
+```bash
+make dev
+```
+
+`make help` lista todos los comandos. Los mismos nombres (`start`, `stop`,
+`build`, `test`, `lint`, `clean`, `logs`, `migrate`) existen en cada componente,
+en Go igual que en TypeScript.
 
 Con eso queda todo en pie (RNF-16):
 
@@ -25,6 +35,35 @@ Con eso queda todo en pie (RNF-16):
 
 El recorrido para la demostración, paso a paso, está en
 [docs/Implementacion/README.md](docs/Implementacion/README.md).
+
+## El entorno de desarrollo
+
+El sistema sigue los *workspace guidelines* del capítulo 8 de
+*Microservices: Up and Running*:
+
+| | Cómo se cumple |
+|---|---|
+| **Docker como única dependencia** | `make start` y nada más; no hace falta Node ni Go en la máquina |
+| **Da igual local o remoto** | Todo en contenedores, sin nada atado al sistema operativo |
+| **Workspace heterogéneo** | 5 servicios en NestJS sobre PostgreSQL y `ms-pagos` en Go sobre MongoDB |
+| **Un servicio o el subsistema** | Cada componente tiene su propio `docker-compose`; el sombrilla levanta todo |
+| **Bases de datos locales** | PostgreSQL, MongoDB, RabbitMQ, RustFS (S3) y Mailpit, todas en contenedor |
+| **Containerización** | Dockerfiles multistage (`dev` / `prod`), código montado desde el host, recarga en caliente y puerto de depuración |
+| **Migraciones** | Esquema versionado en `src/migraciones/`, aplicado al arrancar. Sin `synchronize` |
+| **Pruebas automatizadas** | Jest en NestJS, Vitest en el frontend, `go test` en Go, y ESLint en todos |
+| **Branching y merging** | CI en cada *pull request*: linting, pruebas y construcción de la imagen |
+| **Makefile** | Los mismos targets en los 9 repositorios |
+
+### Comprobar que está vivo
+
+Cada servicio publica dos rutas distintas a propósito:
+
+| Ruta | Qué dice |
+|---|---|
+| `/ping` | **Liveness**: el proceso está vivo. Si no responde, hay que reiniciarlo |
+| `/health` | **Readiness**: además puede trabajar (tiene base de datos). Si falla, solo hay que dejar de mandarle tráfico |
+
+`make health` las consulta todas de una vez.
 
 ## Qué hace
 

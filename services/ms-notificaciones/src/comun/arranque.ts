@@ -15,7 +15,11 @@ interface Opciones {
  * Arranque común a todos los servicios: validación de entrada, formato único de
  * errores y contrato OpenAPI publicado en `/docs` (RNF-13, HT-04).
  */
+/** Nombre del servicio, para que los endpoints de salud digan quién responde. */
+export let nombreDelServicio = '';
+
 export async function arrancar(moduloRaiz: any, opciones: Opciones) {
+  nombreDelServicio = opciones.nombre;
   const app = await NestFactory.create(moduloRaiz, { cors: true });
   const log = new Logger(opciones.nombre);
 

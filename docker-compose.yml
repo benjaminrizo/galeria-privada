@@ -70,6 +70,21 @@ services:
       - "9000:9000"
       - "9001:9001"
 
+  # Base de datos de ms-pagos. Es documental y no relacional a proposito:
+  # persistencia poliglota, cada servicio elige el motor que le conviene
+  # (capitulo 8, Guideline 3 y Guideline 5).
+  mongodb:
+    image: mongo:7
+    volumes:
+      - datos-mongo:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   # Servidor de correo de prueba: recoge los correos en una bandeja web en lugar
   # de enviarlos de verdad.
   mailpit:
@@ -80,7 +95,9 @@ services:
 
   # ---------------------------------------------------------------- microservicios
   ms-auth:
-    build: ./services/ms-auth
+    build:
+      context: ./services/ms-auth
+      target: prod
     environment:
       <<: [*postgres, *broker]
       PORT: 3001
@@ -97,7 +114,9 @@ services:
     restart: unless-stopped
 
   ms-galerias:
-    build: ./services/ms-galerias
+    build:
+      context: ./services/ms-galerias
+      target: prod
     environment:
       <<: [*postgres, *broker]
       PORT: 3002
@@ -112,7 +131,9 @@ services:
     restart: unless-stopped
 
   ms-media:
-    build: ./services/ms-media
+    build:
+      context: ./services/ms-media
+      target: prod
     environment:
       <<: [*postgres, *broker]
       PORT: 3003
@@ -137,7 +158,9 @@ services:
     restart: unless-stopped
 
   ms-seleccion:
-    build: ./services/ms-seleccion
+    build:
+      context: ./services/ms-seleccion
+      target: prod
     environment:
       <<: [*postgres, *broker]
       PORT: 3004
@@ -152,7 +175,9 @@ services:
     restart: unless-stopped
 
   ms-notificaciones:
-    build: ./services/ms-notificaciones
+    build:
+      context: ./services/ms-notificaciones
+      target: prod
     environment:
       <<: [*postgres, *broker]
       PORT: 3005
@@ -172,23 +197,26 @@ services:
       mailpit: { condition: service_started }
     restart: unless-stopped
 
+  # Unico servicio en Go y sobre MongoDB (capitulo 8, Guideline 3).
   ms-pagos:
-    build: ./services/ms-pagos
+    build:
+      context: ./services/ms-pagos
+      target: prod
     environment:
-      <<: *postgres
       PORT: 3006
-      DB_USER: pagos_user
-      DB_PASSWORD: pagos_pass
-      DB_NAME: pagos_db
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: pagos_db
     ports:
       - "3006:3006"
     depends_on:
-      postgres: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
     restart: unless-stopped
 
   # ---------------------------------------------------------------- entrada
   gateway:
-    build: ./gateway
+    build:
+      context: ./gateway
+      target: prod
     environment:
       <<: *broker
       PORT: 3000
@@ -212,7 +240,9 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: prod
     ports:
       - "8080:80"
     depends_on:
@@ -222,3 +252,4 @@ services:
 volumes:
   datos-postgres:
   datos-almacen:
+  datos-mongo:

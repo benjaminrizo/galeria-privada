@@ -1,0 +1,98 @@
+# Integración continua (capítulo 8, Guideline 9).
+#
+# Ninguna rama se mezcla en main sin que esto pase en verde: linting, pruebas
+# y construcción de la imagen de producción de cada componente.
+#
+# Para que la regla se cumpla de verdad hay que activar la protección de rama
+# en GitHub: Settings -> Branches -> Add rule sobre `main`, marcando
+# "Require status checks to pass before merging" y eligiendo este workflow.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ------------------------------------------------- componentes en Node/TS
+  node:
+    name: ${{ matrix.componente }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { componente: ms-auth,           ruta: services/ms-auth }
+          - { componente: ms-galerias,       ruta: services/ms-galerias }
+          - { componente: ms-media,          ruta: services/ms-media }
+          - { componente: ms-seleccion,      ruta: services/ms-seleccion }
+          - { componente: ms-notificaciones, ruta: services/ms-notificaciones }
+          - { componente: gateway,           ruta: gateway }
+          - { componente: frontend,          ruta: frontend }
+    defaults:
+      run:
+        working-directory: ${{ matrix.ruta }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: ${{ matrix.ruta }}/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Análisis estático
+        run: npm run lint
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Construir la imagen de producción
+        run: docker build --target prod -t ${{ matrix.componente }}:ci .
+
+  # -------------------------------------------------------- ms-pagos (Go)
+  go:
+    name: ms-pagos
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/ms-pagos
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: services/ms-pagos/go.sum
+
+      - name: Resolver dependencias
+        run: go mod tidy
+
+      - name: Análisis estático
+        run: |
+          go vet ./...
+          test -z "$(gofmt -l .)" || { echo "Hay archivos sin formatear:"; gofmt -l .; exit 1; }
+
+      - name: Pruebas
+        run: go test -cover ./...
+
+      - name: Construir la imagen de producción
+        run: docker build --target prod -t ms-pagos:ci .
+
+  # ------------------------------------- el sistema completo tiene que levantar
+  sistema:
+    name: docker compose
+    runs-on: ubuntu-latest
+    needs: [node, go]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar el docker-compose
+        run: |
+          docker compose config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml config --quiet

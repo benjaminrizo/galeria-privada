@@ -1,0 +1,15 @@
+# El frontend solo, con Vite y recarga en caliente. Las llamadas a /api las
+# reenvia al gateway que este corriendo en la maquina (puerto 3000).
+name: frontend
+services:
+  frontend:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,28 @@
+# Entorno local de ms-pagos por separado. Para el sistema completo se usa el
+# docker-compose.yml del repositorio sombrilla.
+services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - datos-mongo:/data/db
+
+  ms-pagos:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: pagos_db
+    volumes:
+      # Editar en el host, ejecutar en el contenedor (Guideline 6a).
+      - .:/app
+    depends_on:
+      - mongodb
+
+volumes:
+  datos-mongo:

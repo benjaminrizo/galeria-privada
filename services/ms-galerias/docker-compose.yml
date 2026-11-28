@@ -1,0 +1,72 @@
+# Entorno local de ms-galerias POR SEPARADO (capitulo 8, Guideline 4).
+#
+# Levanta solo este servicio con las piezas de infraestructura que necesita,
+# para poder trabajar en el sin arrancar el sistema entero. Para el sistema
+# completo se usa el docker-compose.yml del repositorio sombrilla.
+#
+#   make start      ->  docker compose up -d --build
+#
+# Monta el codigo fuente del host dentro del contenedor: se edita fuera y se
+# ejecuta dentro, con recarga en caliente al guardar (Guideline 6a y 6d).
+
+name: ms-galerias
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: galerias_user
+      POSTGRES_PASSWORD: galerias_pass
+      POSTGRES_DB: galerias_db
+    volumes:
+    - datos-postgres:/var/lib/postgresql/data
+    ports:
+    - 5432:5432
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U galerias_user
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: galeria
+      RABBITMQ_DEFAULT_PASS: galeria
+    ports:
+    - 5672:5672
+    - 15672:15672
+    healthcheck:
+      test:
+      - CMD
+      - rabbitmq-diagnostics
+      - -q
+      - ping
+      interval: 10s
+      timeout: 10s
+      retries: 12
+  ms-galerias:
+    build:
+      context: .
+      target: dev
+    environment:
+      RABBITMQ_URL: amqp://galeria:galeria@rabbitmq:5672
+      DB_HOST: postgres
+      DB_PORT: 5432
+      PORT: 3002
+      DB_USER: galerias_user
+      DB_PASSWORD: galerias_pass
+      DB_NAME: galerias_db
+    ports:
+    - 3002:3002
+    - 9229:9229
+    volumes:
+    - ./src:/app/src
+    - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+volumes:
+  datos-postgres: null

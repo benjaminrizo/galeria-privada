@@ -64,6 +64,9 @@ Write-Host "  $($todos.Count) issues en el repositorio."
 # Agrupa por el identificador entre corchetes del título.
 $porId = @{}
 foreach ($i in $todos) {
+    # Los sobrantes ya cerrados de una pasada anterior no cuentan como issues
+    # del backlog: ni se tocan ni se vuelven a cerrar.
+    if ($i.title -eq '[duplicado] borrar') { continue }
     if ($i.title -match '^\[([^\]]+)\]') {
         $id = $Matches[1]
         if (-not $porId.ContainsKey($id)) { $porId[$id] = @() }

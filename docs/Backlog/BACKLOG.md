@@ -91,6 +91,12 @@ Infraestructura, arquitectura de microservicios y seguridad que sostienen las de
 | [HT-10](<issues/HT-10 - HTTPS en toda la comunicación.md>) | HTTPS en toda la comunicación | Historia técnica | Después | RNF-01 |
 | [HT-11](<issues/HT-11 - Frontend responsive en español.md>) | Frontend responsive en español | Historia técnica | MVP | RNF-10, RNF-11, RNF-12 |
 | [HT-12](<issues/HT-12 - Validación de la selección orquestada por el gateway.md>) | Validación de la selección orquestada por el gateway | Historia técnica | MVP | ADR 0002 |
+| [HT-13](<issues/HT-13 - Comandos estandarizados con Makefile.md>) | Comandos estandarizados con Makefile | Historia técnica | MVP | ADR 0012 |
+| [HT-14](<issues/HT-14 - Esquema de base de datos con migraciones versionadas.md>) | Esquema de base de datos con migraciones versionadas | Historia técnica | MVP | RNF-15, ADR 0012 |
+| [HT-15](<issues/HT-15 - Imágenes multistage y entorno de desarrollo con recarga en caliente.md>) | Imágenes multistage y entorno de desarrollo con recarga en caliente | Historia técnica | MVP | RNF-16, ADR 0012 |
+| [HT-16](<issues/HT-16 - Pruebas y análisis estático en integración continua.md>) | Pruebas y análisis estático en integración continua | Historia técnica | MVP | ADR 0012 |
+| [HT-17](<issues/HT-17 - Comprobaciones de vida y de disponibilidad.md>) | Comprobaciones de vida y de disponibilidad | Historia técnica | MVP | ADR 0012 |
+| [HT-18](<issues/HT-18 - Heterogeneidad del stack.md>) | Heterogeneidad del stack | Historia técnica | Extra | ADR 0011 |
 
 ## Supuestos por validar con el equipo
 

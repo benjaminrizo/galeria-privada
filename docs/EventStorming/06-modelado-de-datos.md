@@ -4,6 +4,8 @@ Cada microservicio tiene su **propia base de datos** (RNF-15) y ningún otro ser
 
 El modelo es lógico, sin atarse todavía a un motor concreto. El motor se decide en el ADR 0003; mientras tanto el modelo relacional funciona bien para este caso.
 
+> **Nota de implementación.** Cinco servicios materializan su modelo en tablas de PostgreSQL. `ms-pagos` lo materializa como documentos en MongoDB (ADR 0011): el pedido se escribe entero y se lee entero, así que no pierde nada. El modelo lógico de abajo vale para los dos casos; lo que cambia es cómo se guarda.
+
 ![Modelo de datos](diagramas/modelo-de-datos.png)
 
 Fuente: [`diagramas/modelo-de-datos.puml`](diagramas/modelo-de-datos.puml)

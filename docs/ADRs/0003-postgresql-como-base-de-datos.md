@@ -2,6 +2,7 @@
 
 - **Estado:** Propuesta
 - **Fecha:** 4 de noviembre de 2026
+- **Matizada por:** [ADR 0011](0011-go-y-mongodb-para-ms-pagos.md), que saca a `ms-pagos` de esta decisión
 
 ## Contexto
 
@@ -12,6 +13,8 @@ Cada microservicio debe tener su propia base de datos (RNF-15). El modelo de dat
 Se usa **PostgreSQL** como motor de todos los servicios que guardan datos. En desarrollo, un solo contenedor de PostgreSQL aloja **una base de datos por servicio, cada una con su propio usuario y contraseña**, de modo que un servicio no pueda leer las tablas de otro.
 
 `ms-notificaciones` también usa PostgreSQL, para registrar los envíos y reintentarlos.
+
+> **Actualización (ADR 0011).** `ms-pagos` dejó de usar PostgreSQL y pasó a MongoDB, junto con el cambio de lenguaje a Go. La decisión de esta ADR sigue valiendo para los otros cinco servicios; lo que cambió es el alcance de «todos». La alternativa «MongoDB» que aquí se descartaba se descartaba *para el modelo relacional del sistema*, y eso sigue siendo cierto: el pedido es el único agregado que no lo es.
 
 ## Consecuencias
 

@@ -31,6 +31,7 @@ Con eso queda todo en pie (RNF-16):
 | http://localhost:3000/docs | Contrato OpenAPI del gateway |
 | http://localhost:8025 | Bandeja de correo de prueba |
 | http://localhost:15672 | Panel de RabbitMQ (`galeria` / `galeria`) |
+| `localhost:27017` | MongoDB de `ms-pagos` (sin contraseña en desarrollo) |
 | http://localhost:9001 | Consola del almacén de archivos (`galeriaprivada` / `galeriaprivada2026`) |
 
 El recorrido para la demostración, paso a paso, está en

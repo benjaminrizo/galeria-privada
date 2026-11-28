@@ -68,7 +68,8 @@ Cada bounded context es un candidato a microservicio. Se evalúa con estos crite
 ### `ms-pagos` (extra)
 - **Responsabilidad:** crear pedidos de fotos extra y confirmarlos con pago simulado.
 - **Agregado:** Pedido.
-- **Historias:** HU-20.
+- **Historias:** HU-20, HT-18.
+- **Nota:** es el servicio heterogéneo del sistema, en Go y sobre MongoDB (ADR 0011). Se eligió este por lo que ya dice la tabla de arriba: es el de menor acoplamiento y el único cuyo fallo no afecta al MVP.
 
 ## Orden de implementación sugerido
 
@@ -82,4 +83,4 @@ Cada bounded context es un candidato a microservicio. Se evalúa con estos crite
 
 | ID | Duda | Resolución propuesta |
 |---|---|---|
-| H-11 | ¿Express o NestJS para el backend? | Pendiente del equipo; registrar en el ADR 0006. NestJS aporta estructura por módulos y Express es más ligero. |
+| H-11 | ¿Express o NestJS para el backend? | **Resuelto:** NestJS (ADR 0006) para el gateway y cinco servicios. `ms-pagos` quedó fuera: va en Go con la librería estándar (ADR 0011). |

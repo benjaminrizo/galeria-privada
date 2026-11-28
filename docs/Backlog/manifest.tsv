@@ -38,3 +38,9 @@ HT-09	[HT-09] Generación de códigos aleatorios para enlaces	historia-tecnica,M
 HT-10	[HT-10] HTTPS en toda la comunicación	historia-tecnica,Despues,E8	issues/HT-10 - HTTPS en toda la comunicación.md
 HT-11	[HT-11] Frontend responsive en español	historia-tecnica,MVP,E8	issues/HT-11 - Frontend responsive en español.md
 HT-12	[HT-12] Validación de la selección orquestada por el gateway	historia-tecnica,MVP,E8	issues/HT-12 - Validación de la selección orquestada por el gateway.md
+HT-13	[HT-13] Comandos estandarizados con Makefile	historia-tecnica,MVP,E8	issues/HT-13 - Comandos estandarizados con Makefile.md
+HT-14	[HT-14] Esquema de base de datos con migraciones versionadas	historia-tecnica,MVP,E8	issues/HT-14 - Esquema de base de datos con migraciones versionadas.md
+HT-15	[HT-15] Imágenes multistage y entorno de desarrollo con recarga en caliente	historia-tecnica,MVP,E8	issues/HT-15 - Imágenes multistage y entorno de desarrollo con recarga en caliente.md
+HT-16	[HT-16] Pruebas y análisis estático en integración continua	historia-tecnica,MVP,E8	issues/HT-16 - Pruebas y análisis estático en integración continua.md
+HT-17	[HT-17] Comprobaciones de vida y de disponibilidad	historia-tecnica,MVP,E8	issues/HT-17 - Comprobaciones de vida y de disponibilidad.md
+HT-18	[HT-18] Heterogeneidad del stack	historia-tecnica,Extra,E8	issues/HT-18 - Heterogeneidad del stack.md

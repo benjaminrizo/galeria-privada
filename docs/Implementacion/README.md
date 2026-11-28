@@ -53,10 +53,10 @@ services/ms-galerias/    Gestión de Galerías
 services/ms-media/       Medios
 services/ms-seleccion/   Selección
 services/ms-notificaciones/
-services/ms-pagos/       Pagos (extra)
+services/ms-pagos/       Pagos (extra) · en Go y sobre MongoDB (ADR 0011)
 frontend/                React + Vite, servido por nginx
-infra/postgres/init/     Crea una base y un usuario por servicio
-scripts/                 Script para publicar el backlog como Issues
+infra/postgres/init/     Crea una base y un usuario por servicio (los cinco de NestJS)
+scripts/                 Publicar el backlog, separar repositorios, exportar contratos
 docs/                    Todo el diseño
 ```
 
@@ -106,22 +106,32 @@ toda la lógica de coordinación).
 | RNF-10, RNF-11, RNF-12 | Interfaz responsive en español, con HTML y CSS estándar |
 | RNF-13 | Swagger en `/docs` de cada servicio, generado desde el propio código |
 | RNF-14 | Ningún servicio conoce la dirección de otro: solo el gateway las tiene |
-| RNF-15 | Una base de datos y un usuario por servicio (`infra/postgres/init/`) |
-| RNF-16 | `docker compose up --build` |
+| RNF-15 | Una base de datos por servicio: cinco en PostgreSQL con su propio usuario (`infra/postgres/init/`) y MongoDB para `ms-pagos` |
+| RNF-16 | `make start` (o `docker compose up -d --build`) |
 
 RNF-01 (HTTPS en toda la comunicación) queda pendiente: en desarrollo todo va
 por HTTP dentro de la red de Docker. Es la historia **HT-10**, marcada como
 «Después», y se resolvería con un certificado en la entrada de nginx.
 
+## Lo que se resolvió al revisar el capítulo 8
+
+Dos de los puntos que antes estaban abiertos ya no lo están:
+
+- **Migraciones.** Ya no se usa `synchronize`. Cada servicio tiene sus
+  migraciones versionadas en `src/migraciones/` y se aplican solas al
+  arrancar (HT-14, ADR 0012).
+- **Pruebas automáticas.** Cada componente tiene pruebas y análisis estático,
+  y la integración continua los ejecuta en cada propuesta de cambio
+  (HT-16, ADR 0012). `make test` las corre todas.
+
 ## Lo que queda abierto
 
-- **Migraciones.** Las tablas se crean solas al arrancar (`synchronize: true`),
-  que sirve para el proyecto pero no para producción.
-- **Pruebas automáticas.** El recorrido de arriba se hizo a mano; no hay todavía
-  pruebas unitarias ni de integración.
-- **RNF-01.** Como se explica arriba.
+- **RNF-01.** Como se explica arriba: en desarrollo todo va por HTTP dentro de
+  la red de Docker.
 - **Un solo contenedor de PostgreSQL.** Es lo que decidió el ADR 0003 para
   desarrollo; en producción serían instancias separadas.
+- **Pruebas de integración entre servicios.** Las que hay son unitarias, con
+  los repositorios simulados. El recorrido completo sigue comprobándose a mano.
 
 ## Desarrollo sin Docker
 

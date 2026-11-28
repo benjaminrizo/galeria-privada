@@ -11,6 +11,8 @@ El backend se escribe en Node.js y la descripción del proyecto deja abierta la 
 
 Se usa **NestJS** (con TypeScript) para el gateway y los microservicios.
 
+> **Actualización (ADR 0011).** `ms-pagos` se reescribió en Go. Esta decisión vale para el gateway y los otros cinco servicios. El contrato entre ellos no cambió, que es precisamente lo que demuestra que el framework es un detalle interno de cada servicio.
+
 - Estructura de módulos, controladores y servicios igual en todos los servicios.
 - Documentación OpenAPI generada con el módulo de Swagger de NestJS.
 - Integración con RabbitMQ mediante el soporte de microservicios de NestJS.

@@ -11,7 +11,7 @@ El transporte RMQ de NestJS está pensado para enviar un mensaje a **una** cola,
 
 ## Decisión
 
-Los eventos de integración viajan por un **exchange de tipo `topic`** llamado `galeria.eventos`, declarado con `amqplib` en un módulo común (`src/comun/bus-eventos.service.ts`) que comparten todos los servicios.
+Los eventos de integración viajan por un **exchange de tipo `topic`** llamado `galeria.eventos`, declarado con `amqplib` en un módulo común (`src/comun/bus-eventos.service.ts`) que comparten todos los servicios que publican o consumen eventos. `ms-pagos` no participa en el bus: el gateway lo llama directamente y es él quien publica el evento resultante (ADR 0007).
 
 - La **clave de enrutamiento** es el nombre del evento (`GaleriaEliminada`, `FotoSubida`, …).
 - Cada consumidor declara su **propia cola duradera**, con el nombre `<servicio>.<evento>`, y la enlaza al exchange con la clave que le interesa.

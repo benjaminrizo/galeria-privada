@@ -1,30 +1,23 @@
-# Multistage build (capítulo 8, Guideline 6c): la imagen de producción lleva
-# solo el binario compilado; la de desarrollo lleva el compilador y recarga en
-# caliente. Se elige una u otra con "target:" en docker-compose.
+# Dos etapas (capítulo 8, Guideline 6c):
+#
+#   construccion -> tiene el compilador de Go. Es la imagen de trabajo.
+#   prod         -> solo el binario, sobre Alpine. Pesa unos pocos megabytes.
 
-# ---------------------------------------------------------------- compilación
-FROM golang:1.23-alpine AS build
-WORKDIR /src
+FROM golang:1.23-alpine AS construccion
+WORKDIR /app
 COPY go.mod ./
 COPY *.go ./
 # go mod tidy resuelve y fija las dependencias dentro de la imagen.
-RUN go mod tidy && CGO_ENABLED=0 go build -ldflags="-s -w" -o /bin/ms-pagos .
-
-# --------------------------------------------------------------- desarrollo
-# Recarga en caliente: air vigila los archivos y recompila al guardar.
-FROM golang:1.23-alpine AS dev
-WORKDIR /app
-RUN go install github.com/air-verse/air@latest
-COPY go.mod ./
-COPY *.go ./
-RUN go mod tidy
+RUN go mod tidy && go build -o /tmp/ms-pagos .
 EXPOSE 3006
-CMD ["air", "-c", ".air.toml"]
+# En desarrollo el código se monta desde tu máquina. Go compila en segundo y
+# medio, así que para ver un cambio basta con:  docker compose restart ms-pagos
+CMD ["go", "run", "."]
 
-# --------------------------------------------------------------- producción
 FROM alpine:3.20 AS prod
-RUN adduser -D -u 10001 aplicacion
-COPY --from=build /bin/ms-pagos /usr/local/bin/ms-pagos
+COPY --from=construccion /tmp/ms-pagos /usr/local/bin/ms-pagos
+# No corre como administrador.
+RUN adduser -D aplicacion
 USER aplicacion
 EXPOSE 3006
 CMD ["ms-pagos"]

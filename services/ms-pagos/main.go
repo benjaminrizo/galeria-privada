@@ -43,14 +43,14 @@ const (
 // No hay ningún campo de tarjeta ni de medio de pago: el pago es simulado y el
 // sistema nunca guarda esos datos (RNF-06).
 type Pedido struct {
-	ID            string     `bson:"_id"            json:"pedidoId"`
-	GaleriaID     string     `bson:"galeriaId"      json:"galeriaId"`      // referencia lógica a ms-galerias
-	CantidadFotos int        `bson:"cantidadFotos"  json:"cantidadFotos"`
-	PrecioUnitario float64   `bson:"precioUnitario" json:"precioUnitario"`
-	Total         float64    `bson:"total"          json:"total"`
-	Estado        string     `bson:"estado"         json:"estado"`
-	CreadoEn      time.Time  `bson:"creadoEn"       json:"creadoEn"`
-	ConfirmadoEn  *time.Time `bson:"confirmadoEn"   json:"confirmadoEn"`
+	ID             string     `bson:"_id"            json:"pedidoId"`
+	GaleriaID      string     `bson:"galeriaId"      json:"galeriaId"` // referencia lógica a ms-galerias
+	CantidadFotos  int        `bson:"cantidadFotos"  json:"cantidadFotos"`
+	PrecioUnitario float64    `bson:"precioUnitario" json:"precioUnitario"`
+	Total          float64    `bson:"total"          json:"total"`
+	Estado         string     `bson:"estado"         json:"estado"`
+	CreadoEn       time.Time  `bson:"creadoEn"       json:"creadoEn"`
+	ConfirmadoEn   *time.Time `bson:"confirmadoEn"   json:"confirmadoEn"`
 }
 
 // ------------------------------------------------------------------- errores

@@ -1,8 +1,8 @@
 # Entorno de DESARROLLO (capítulo 8, Guideline 6).
 #
-# Cambia las imágenes de producción por las de desarrollo y monta el código
+# Cambia la imagen de producción por la de construcción y monta el código
 # fuente dentro de los contenedores: se edita en el host y se ejecuta en el
-# contenedor, con recarga en caliente al guardar.
+# contenedor, sin reconstruir la imagen cada vez.
 #
 #   make dev
 #
@@ -21,41 +21,42 @@
 
 services:
   ms-auth:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-auth/src:/app/src", "/app/node_modules"]
     ports: ["9231:9229"]
 
   ms-galerias:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-galerias/src:/app/src", "/app/node_modules"]
     ports: ["9232:9229"]
 
   ms-media:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-media/src:/app/src", "/app/node_modules"]
     ports: ["9233:9229"]
 
   ms-seleccion:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-seleccion/src:/app/src", "/app/node_modules"]
     ports: ["9234:9229"]
 
   ms-notificaciones:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-notificaciones/src:/app/src", "/app/node_modules"]
     ports: ["9235:9229"]
 
-  # En Go la recarga la hace air, que vigila los .go montados.
+  # En Go no hay vigilante: compila en segundo y medio, asi que para ver un
+  # cambio basta con 'docker compose restart ms-pagos'.
   ms-pagos:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./services/ms-pagos:/app"]
 
   gateway:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./gateway/src:/app/src", "/app/node_modules"]
     ports: ["9230:9229"]
 
   # Vite escucha en el 80, igual que nginx en produccion: misma direccion.
   frontend:
-    build: { target: dev }
+    build: { target: construccion }
     volumes: ["./frontend/src:/app/src", "/app/node_modules"]

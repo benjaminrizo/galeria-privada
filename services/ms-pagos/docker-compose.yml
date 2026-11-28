@@ -11,7 +11,7 @@ services:
   ms-pagos:
     build:
       context: .
-      target: dev
+      target: construccion
     ports:
       - "3006:3006"
     environment:

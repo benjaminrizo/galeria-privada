@@ -34,13 +34,18 @@ aplican solas al arrancar (`migrationsRun`). El esquema no cambia sin dejar
 rastro, y todos los entornos quedan iguales. `ms-pagos` no tiene migraciones
 porque MongoDB no tiene esquema fijo.
 
-**Imágenes multistage con dos destinos.** Cada `Dockerfile` tiene una etapa
-`dev` y una etapa `prod`:
+**Imágenes multistage con dos destinos.** Cada `Dockerfile` tiene **dos
+etapas**, ni una más, para que se lea de un vistazo:
 
 | Etapa | Qué lleva | Para qué |
 |---|---|---|
-| `dev` | compilador, dependencias de desarrollo, recarga en caliente, puerto de depuración | trabajar: se edita en el host y se ejecuta en el contenedor |
-| `prod` | solo lo necesario para ejecutar, con usuario sin privilegios | desplegar |
+| `construccion` | compilador y todas las dependencias | trabajar: se edita en el host y se ejecuta en el contenedor |
+| `prod` | solo lo necesario para ejecutar, y no corre como administrador | desplegar |
+
+En los componentes de TypeScript, la etapa de construcción recompila y
+reinicia sola al guardar. En Go no se usa ninguna herramienta extra para eso:
+compila en segundo y medio, así que para ver un cambio basta con
+`docker compose restart ms-pagos`.
 
 **Un servicio o el sistema entero, igual de fácil.** Cada componente tiene su
 propio `docker-compose.yml` que lo levanta aislado con sus dependencias. El

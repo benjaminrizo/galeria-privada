@@ -13,6 +13,9 @@ simulado. Escrito en **Go** con **MongoDB**.
 
 Docker y Docker Compose. Nada más: no hace falta tener Go instalado.
 
+Para ver un cambio en el código: `docker compose restart ms-pagos`. Go compila
+en segundo y medio, así que no hace falta ninguna herramienta de recarga.
+
 ## Comandos
 
 | Comando | Qué hace |

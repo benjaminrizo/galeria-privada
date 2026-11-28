@@ -11,7 +11,7 @@ services:
   gateway:
     build:
       context: .
-      target: dev
+      target: construccion
     environment:
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-secreto-de-desarrollo}

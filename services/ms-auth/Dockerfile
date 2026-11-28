@@ -1,45 +1,32 @@
-# Multistage build (capítulo 8, Guideline 6c).
+# Dos etapas (capítulo 8, Guideline 6c):
 #
-#   target: dev   -> imagen con compilador y recarga en caliente, para trabajar
-#   target: prod  -> imagen mínima, sin dependencias de desarrollo ni código
-#                    fuente, ejecutable tal cual en Kubernetes o Swarm
+#   construccion -> tiene el compilador y todas las dependencias.
+#                   Es la imagen con la que se TRABAJA.
+#   prod         -> solo lo necesario para ejecutar.
+#                   Es la imagen que se DESPLIEGA.
 #
 # Se elige una u otra con "target:" en docker-compose.
 
-# --------------------------------------------------------------- dependencias
-FROM node:20-alpine AS dependencias
+FROM node:20-alpine AS construccion
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-
-# ---------------------------------------------------------------- compilación
-FROM dependencias AS construccion
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build && npm prune --omit=dev
-
-# ---------------------------------------------------------------- desarrollo
-# El código se edita en el host y se ejecuta aquí (Guideline 6a): docker-compose
-# monta ./src encima de /app/src, y tsc -w + node --watch recompilan y
-# reinician solos al guardar (Guideline 6d).
-FROM dependencias AS dev
-WORKDIR /app
-COPY tsconfig.json ./
-COPY src ./src
-ENV NODE_ENV=development
+RUN npm run build
 EXPOSE 3001
-# El puerto 9229 queda abierto para enganchar el depurador de Node.
-EXPOSE 9229
+# En desarrollo el código se monta desde tu máquina y esto lo recompila y
+# reinicia al guardar (Guideline 6a y 6d).
 CMD ["npm", "run", "start:dev"]
 
-# ---------------------------------------------------------------- producción
 FROM node:20-alpine AS prod
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup -S aplicacion && adduser -S aplicacion -G aplicacion
-COPY --from=construccion /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 COPY --from=construccion /app/dist ./dist
-COPY --from=construccion /app/package.json ./
+# No corre como administrador.
+RUN adduser -D aplicacion
 USER aplicacion
 EXPOSE 3001
 CMD ["node", "dist/main.js"]

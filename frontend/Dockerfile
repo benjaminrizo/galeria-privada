@@ -1,31 +1,19 @@
-# Multistage build (capítulo 8, Guideline 6c).
+# Dos etapas (capítulo 8, Guideline 6c):
 #
-#   target: dev   -> servidor de desarrollo de Vite con recarga en caliente
-#   target: prod  -> los archivos estáticos servidos por nginx
+#   construccion -> Vite con recarga en caliente. Es la imagen de trabajo.
+#   prod         -> los archivos estáticos servidos por nginx.
 
-# --------------------------------------------------------------- dependencias
-FROM node:20-alpine AS dependencias
+FROM node:20-alpine AS construccion
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-
-# ---------------------------------------------------------------- desarrollo
-FROM dependencias AS dev
-WORKDIR /app
-COPY vite.config.js index.html ./
-COPY src ./src
-EXPOSE 80
-# Mismo puerto que nginx en produccion, para que la direccion no cambie.
-# --host hace visible el servidor desde fuera del contenedor.
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
-
-# ---------------------------------------------------------------- compilación
-FROM dependencias AS construccion
 COPY vite.config.js index.html ./
 COPY src ./src
 RUN npm run build
+EXPOSE 80
+# Mismo puerto que nginx, para que la dirección no cambie entre modos.
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
 
-# ---------------------------------------------------------------- producción
 FROM nginx:1.25-alpine AS prod
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=construccion /app/dist /usr/share/nginx/html

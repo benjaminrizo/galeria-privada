@@ -51,7 +51,7 @@ El sistema sigue los *workspace guidelines* del capítulo 8 de
 | **Un servicio o el subsistema** | Cada componente tiene su propio `docker-compose`; el sombrilla levanta todo |
 | **Bases de datos locales** | PostgreSQL, MongoDB, RabbitMQ, RustFS (S3) y Mailpit, todas en contenedor |
 | **Edge router** | Traefik delante de todo: una sola dirección y descubrimiento automático de servicios |
-| **Containerización** | Dockerfiles multistage (`dev` / `prod`), código montado desde el host, recarga en caliente y puerto de depuración |
+| **Containerización** | Dockerfiles de dos etapas (construcción / producción), con el código montado desde el host |
 | **Migraciones** | Esquema versionado en `src/migraciones/`, aplicado al arrancar. Sin `synchronize` |
 | **Pruebas automatizadas** | Jest en NestJS, Vitest en el frontend, `go test` en Go, y ESLint en todos |
 | **Branching y merging** | CI en cada *pull request*: linting, pruebas y construcción de la imagen |

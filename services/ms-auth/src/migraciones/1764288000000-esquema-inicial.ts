@@ -10,13 +10,18 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Se ejecutan solas al arrancar el servicio (`migrationsRun`), así que
  * `make start` deja la base lista sin pasos manuales.
+ *
+ * Las sentencias son idempotentes a propósito. Esta migración tiene que poder
+ * correr sobre una base vacía y también sobre una que ya tenía las tablas de
+ * cuando el esquema se creaba con `synchronize`, sin que el servicio se caiga
+ * al arrancar. A partir de aquí, cada cambio de esquema es una migración nueva.
  */
 export class EsquemaInicial1764288000000 implements MigrationInterface {
   name = 'EsquemaInicial1764288000000';
 
   public async up(q: QueryRunner): Promise<void> {
     await q.query(`
-      CREATE TABLE "fotografos" (
+      CREATE TABLE IF NOT EXISTS "fotografos" (
         "id"            uuid NOT NULL DEFAULT gen_random_uuid(),
         "nombre"        text NOT NULL,
         "correo"        text NOT NULL,
@@ -27,7 +32,7 @@ export class EsquemaInicial1764288000000 implements MigrationInterface {
       )`);
 
     await q.query(`
-      CREATE TABLE "accesos_galeria" (
+      CREATE TABLE IF NOT EXISTS "accesos_galeria" (
         "id"         uuid NOT NULL DEFAULT gen_random_uuid(),
         "galeria_id" uuid NOT NULL,
         "codigo"     text NOT NULL,
@@ -36,10 +41,10 @@ export class EsquemaInicial1764288000000 implements MigrationInterface {
         CONSTRAINT "UQ_accesos_galeria_codigo" UNIQUE ("codigo"),
         CONSTRAINT "PK_accesos_galeria" PRIMARY KEY ("id")
       )`);
-    await q.query(`CREATE INDEX "IDX_accesos_galeria_galeria_id" ON "accesos_galeria" ("galeria_id")`);
+    await q.query(`CREATE INDEX IF NOT EXISTS "IDX_accesos_galeria_galeria_id" ON "accesos_galeria" ("galeria_id")`);
 
     await q.query(`
-      CREATE TABLE "eventos_procesados" (
+      CREATE TABLE IF NOT EXISTS "eventos_procesados" (
         "id"           uuid NOT NULL,
         "evento"       text NOT NULL,
         "procesado_en" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -48,9 +53,9 @@ export class EsquemaInicial1764288000000 implements MigrationInterface {
   }
 
   public async down(q: QueryRunner): Promise<void> {
-    await q.query(`DROP TABLE "eventos_procesados"`);
-    await q.query(`DROP INDEX "IDX_accesos_galeria_galeria_id"`);
-    await q.query(`DROP TABLE "accesos_galeria"`);
-    await q.query(`DROP TABLE "fotografos"`);
+    await q.query(`DROP TABLE IF EXISTS "eventos_procesados"`);
+    await q.query(`DROP INDEX IF EXISTS "IDX_accesos_galeria_galeria_id"`);
+    await q.query(`DROP TABLE IF EXISTS "accesos_galeria"`);
+    await q.query(`DROP TABLE IF EXISTS "fotografos"`);
   }
 }

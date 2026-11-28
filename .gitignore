@@ -16,3 +16,6 @@ Thumbs.db
 # Editores
 .vscode/
 .idea/
+
+# Paquetes temporales de verificacion
+*.tar.gz

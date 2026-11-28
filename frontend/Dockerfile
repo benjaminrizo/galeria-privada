@@ -14,9 +14,10 @@ FROM dependencias AS dev
 WORKDIR /app
 COPY vite.config.js index.html ./
 COPY src ./src
-EXPOSE 5173
-# --host para que el servidor sea visible desde fuera del contenedor.
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+EXPOSE 80
+# Mismo puerto que nginx en produccion, para que la direccion no cambie.
+# --host hace visible el servidor desde fuera del contenedor.
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
 
 # ---------------------------------------------------------------- compilación
 FROM dependencias AS construccion

@@ -10,15 +10,20 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Se ejecutan solas al arrancar el servicio (`migrationsRun`), así que
  * `make start` deja la base lista sin pasos manuales.
+ *
+ * Las sentencias son idempotentes a propósito. Esta migración tiene que poder
+ * correr sobre una base vacía y también sobre una que ya tenía las tablas de
+ * cuando el esquema se creaba con `synchronize`, sin que el servicio se caiga
+ * al arrancar. A partir de aquí, cada cambio de esquema es una migración nueva.
  */
 export class EsquemaInicial1764288000000 implements MigrationInterface {
   name = 'EsquemaInicial1764288000000';
 
   public async up(q: QueryRunner): Promise<void> {
-    await q.query(`CREATE TYPE "fotos_estado_procesamiento_enum" AS ENUM ('pendiente', 'procesando', 'lista', 'error')`);
+    await q.query(`DO $$ BEGIN CREATE TYPE "fotos_estado_procesamiento_enum" AS ENUM ('pendiente', 'procesando', 'lista', 'error'); EXCEPTION WHEN duplicate_object THEN null; END $$;`);
 
     await q.query(`
-      CREATE TABLE "fotos" (
+      CREATE TABLE IF NOT EXISTS "fotos" (
         "id"                   uuid NOT NULL DEFAULT gen_random_uuid(),
         "galeria_id"           uuid NOT NULL,
         "nombre_archivo"       text NOT NULL,
@@ -28,10 +33,10 @@ export class EsquemaInicial1764288000000 implements MigrationInterface {
         "creado_en"            TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "PK_fotos" PRIMARY KEY ("id")
       )`);
-    await q.query(`CREATE INDEX "IDX_fotos_galeria_id" ON "fotos" ("galeria_id")`);
+    await q.query(`CREATE INDEX IF NOT EXISTS "IDX_fotos_galeria_id" ON "fotos" ("galeria_id")`);
 
     await q.query(`
-      CREATE TABLE "eventos_procesados" (
+      CREATE TABLE IF NOT EXISTS "eventos_procesados" (
         "id"           uuid NOT NULL,
         "evento"       text NOT NULL,
         "procesado_en" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -40,9 +45,9 @@ export class EsquemaInicial1764288000000 implements MigrationInterface {
   }
 
   public async down(q: QueryRunner): Promise<void> {
-    await q.query(`DROP TABLE "eventos_procesados"`);
-    await q.query(`DROP INDEX "IDX_fotos_galeria_id"`);
-    await q.query(`DROP TABLE "fotos"`);
-    await q.query(`DROP TYPE "fotos_estado_procesamiento_enum"`);
+    await q.query(`DROP TABLE IF EXISTS "eventos_procesados"`);
+    await q.query(`DROP INDEX IF EXISTS "IDX_fotos_galeria_id"`);
+    await q.query(`DROP TABLE IF EXISTS "fotos"`);
+    await q.query(`DROP TYPE IF EXISTS "fotos_estado_procesamiento_enum"`);
   }
 }

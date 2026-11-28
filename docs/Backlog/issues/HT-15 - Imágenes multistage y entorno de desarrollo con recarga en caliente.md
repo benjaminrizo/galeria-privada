@@ -11,4 +11,5 @@ Separar la imagen con la que se trabaja de la imagen que se despliega, y poder e
 - [ ] Cada `Dockerfile` tiene dos etapas: una de construcción y una de producción.
 - [ ] La imagen de producción no lleva código fuente ni dependencias de desarrollo, y no se ejecuta como root.
 - [ ] En modo desarrollo el código se monta desde la máquina y el cambio se ve sin reconstruir la imagen.
+- [ ] Se puede enganchar un depurador al servicio en modo desarrollo.
 - [ ] Levantar el entorno no exige tener instalado Node ni Go en la máquina.

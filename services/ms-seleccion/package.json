@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "start:dev": "tsc -w -p tsconfig.json & sleep 6 && node --watch dist/main.js",
-    "test": "jest",
+    "start:dev": "tsc -w -p tsconfig.json & sleep 6 && node --inspect=0.0.0.0:9229 --watch dist/main.js",
+    "test": "jest --coverage",
     "lint": "eslint src"
   },
   "dependencies": {

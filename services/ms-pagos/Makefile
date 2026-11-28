@@ -12,7 +12,7 @@ stop:    ## Detiene el servicio
 build:   ## Construye la imagen de producción
 	docker build --target prod -t ms-pagos:latest .
 
-test:    ## Ejecuta las pruebas con cobertura
+test:    ## Ejecuta las pruebas
 	go test -cover ./...
 
 lint:    ## Análisis estático

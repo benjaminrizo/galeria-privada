@@ -43,7 +43,8 @@ etapas**, ni una más, para que se lea de un vistazo:
 | `prod` | solo lo necesario para ejecutar, y no corre como administrador | desplegar |
 
 En los componentes de TypeScript, la etapa de construcción recompila y
-reinicia sola al guardar. En Go no se usa ninguna herramienta extra para eso:
+reinicia sola al guardar, y deja abierto el puerto 9229 para enganchar un
+depurador desde el editor. En Go no se usa ninguna herramienta extra para eso:
 compila en segundo y medio, así que para ver un cambio basta con
 `docker compose restart ms-pagos`.
 

@@ -13,7 +13,7 @@ stop:    ## Detiene el servicio
 build:   ## Construye la imagen de produccion
 	docker build --target prod -t frontend:latest .
 
-test:    ## Ejecuta las pruebas con cobertura
+test:    ## Ejecuta las pruebas
 	npm test
 
 lint:    ## Analisis estatico

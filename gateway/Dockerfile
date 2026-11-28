@@ -15,8 +15,11 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 EXPOSE 3000
-# En desarrollo el código se monta desde tu máquina y esto lo recompila y
-# reinicia al guardar (Guideline 6a y 6d).
+# 9229 es el puerto del depurador: con el sistema en modo desarrollo puedes
+# engancharte desde VS Code y poner puntos de interrupcion (Guideline 6d).
+EXPOSE 9229
+# El código se monta desde tu máquina y esto lo recompila y reinicia al
+# guardar (Guideline 6a y 6d).
 CMD ["npm", "run", "start:dev"]
 
 FROM node:20-alpine AS prod

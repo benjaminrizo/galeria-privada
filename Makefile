@@ -1,7 +1,7 @@
 # Repositorio sombrilla: targets del SISTEMA COMPLETO.
 # Cada componente tiene ademas su propio Makefile con los mismos nombres
 # (capitulo 8, Guideline 10).
-.PHONY: start dev stop build test lint clean logs ps health migrate clonar help
+.PHONY: start dev stop build test lint clean logs ps health migrate clonar contratos help
 .DEFAULT_GOAL := help
 
 COMPONENTES := services/ms-auth services/ms-galerias services/ms-media \
@@ -44,6 +44,9 @@ health:  ## Comprueba la salud de cada servicio
 migrate: ## Las migraciones se aplican solas al arrancar cada servicio
 	@echo "Cada servicio aplica sus migraciones al arrancar (migrationsRun)."
 	@echo "Para forzarlas: make stop && make clean && make start"
+
+contratos: ## Exporta el OpenAPI de cada servicio a su docs/api.yml (con el sistema levantado)
+	bash scripts/exportar-contratos.sh
 
 clonar:  ## Clona los 8 repositorios de los componentes
 	bash scripts/clonar.sh
